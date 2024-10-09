@@ -8,13 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-
-interface QueryCondition {
-  field: string
-  operator: string
-  value: string
-  valueTo?: string
-}
+import { QueryCondition, Operator } from '@/types/interfaces'
 
 interface QueryWizardProps {
   onApplyQuery: (conditions: QueryCondition[]) => void
@@ -33,25 +27,27 @@ const fields = [
 ]
 
 const operators = {
-  string: ['equals', 'contains'],
-  number: ['equals', 'greaterThan', 'lessThan', 'between'],
-  date: ['equals', 'before', 'after', 'between'],
-  boolean: ['equals'],
+  string: ['equals', 'contains'] as Operator[],
+  number: ['equals', 'greaterThan', 'lessThan', 'between'] as Operator[],
+  date: ['equals', 'before', 'after', 'between'] as Operator[],
+  boolean: ['equals'] as Operator[],
 }
 
 export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps) {
-  const [conditions, setConditions] = useState<QueryCondition[]>([{ field: '', operator: '', value: '' }])
+  const [conditions, setConditions] = useState<QueryCondition[]>([
+    { field: '', operator: 'equals', value: '' },
+  ])
 
   const handleFieldChange = (index: number, value: string) => {
     const newConditions = [...conditions]
     newConditions[index].field = value
-    newConditions[index].operator = ''
+    newConditions[index].operator = getOperatorOptions(value)[0] // Assign first valid operator
     newConditions[index].value = ''
     newConditions[index].valueTo = undefined
     setConditions(newConditions)
   }
 
-  const handleOperatorChange = (index: number, value: string) => {
+  const handleOperatorChange = (index: number, value: Operator) => {
     const newConditions = [...conditions]
     newConditions[index].operator = value
     newConditions[index].value = ''
@@ -59,7 +55,11 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
     setConditions(newConditions)
   }
 
-  const handleValueChange = (index: number, value: string, isSecondValue: boolean = false) => {
+  const handleValueChange = (
+    index: number,
+    value: string | number | boolean,
+    isSecondValue: boolean = false
+  ) => {
     const newConditions = [...conditions]
     if (isSecondValue) {
       newConditions[index].valueTo = value
@@ -70,7 +70,7 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
   }
 
   const addCondition = () => {
-    setConditions([...conditions, { field: '', operator: '', value: '' }])
+    setConditions([...conditions, { field: '', operator: 'equals', value: '' }])
   }
 
   const removeCondition = (index: number) => {
@@ -78,21 +78,32 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
     setConditions(newConditions)
   }
 
-  const getOperatorOptions = (fieldName: string) => {
-    const fieldType = fieldName === 'graduationYear' ? 'number' :
-                      fieldName === 'promisingStudent' ? 'boolean' :
-                      fieldName === 'createdAt' || fieldName === 'updatedAt' ? 'date' : 'string'
+  const getOperatorOptions = (fieldName: string): Operator[] => {
+    const fieldType =
+      fieldName === 'graduationYear'
+        ? 'number'
+        : fieldName === 'promisingStudent'
+        ? 'boolean'
+        : fieldName === 'createdAt' || fieldName === 'updatedAt'
+        ? 'date'
+        : 'string'
     return operators[fieldType as keyof typeof operators]
   }
 
   const isValidCondition = (condition: QueryCondition) => {
-    return condition.field && condition.operator && condition.value &&
-           (condition.operator !== 'between' || (condition.valueTo && condition.valueTo.trim() !== ''))
+    return (
+      condition.field &&
+      condition.operator &&
+      condition.value !== '' &&
+      (condition.operator !== 'between' ||
+        (condition.valueTo !== undefined && condition.valueTo.toString().trim() !== ''))
+    )
   }
 
   const handleApplyQuery = () => {
     const validConditions = conditions.filter(isValidCondition)
     onApplyQuery(validConditions)
+    onClose() // Close the wizard after applying the query
   }
 
   return (
@@ -107,6 +118,7 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
       <CardContent className="space-y-4">
         {conditions.map((condition, index) => (
           <div key={index} className="flex flex-wrap items-end gap-2 pb-4 border-b">
+            {/* Field Selection */}
             <div className="flex-1 min-w-[200px]">
               <Label htmlFor={`field-${index}`}>Field</Label>
               <Select
@@ -125,38 +137,45 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
                 </SelectContent>
               </Select>
             </div>
+            {/* Operator Selection */}
             <div className="flex-1 min-w-[200px]">
               <Label htmlFor={`operator-${index}`}>Operator</Label>
               <Select
                 value={condition.operator}
-                onValueChange={(value) => handleOperatorChange(index, value)}
+                onValueChange={(value) => handleOperatorChange(index, value as Operator)}
                 disabled={!condition.field}
               >
                 <SelectTrigger id={`operator-${index}`}>
                   <SelectValue placeholder="Select operator" />
                 </SelectTrigger>
                 <SelectContent>
-                  {condition.field && getOperatorOptions(condition.field).map((op) => (
-                    <SelectItem key={op} value={op}>
-                      {op.charAt(0).toUpperCase() + op.slice(1)}
-                    </SelectItem>
-                  ))}
+                  {condition.field &&
+                    getOperatorOptions(condition.field).map((op) => (
+                      <SelectItem key={op} value={op}>
+                        {op.charAt(0).toUpperCase() + op.slice(1)}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
+            {/* Value Input */}
             <div className="flex-1 min-w-[200px]">
               <Label htmlFor={`value-${index}`}>Value</Label>
               {condition.field === 'promisingStudent' ? (
-                <Switch
-                  id={`value-${index}`}
-                  checked={condition.value === 'true'}
-                  onCheckedChange={(checked) => handleValueChange(index, checked ? 'true' : 'false')}
-                />
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id={`value-${index}`}
+                    checked={condition.value === true || condition.value === 'true'}
+                    onCheckedChange={(checked) => handleValueChange(index, checked)}
+                    disabled={!condition.operator}
+                  />
+                  <span>{condition.value === true || condition.value === 'true' ? 'Yes' : 'No'}</span>
+                </div>
               ) : condition.field === 'createdAt' || condition.field === 'updatedAt' ? (
                 <Input
                   id={`value-${index}`}
                   type="date"
-                  value={condition.value}
+                  value={condition.value as string}
                   onChange={(e) => handleValueChange(index, e.target.value)}
                   disabled={!condition.operator}
                 />
@@ -164,23 +183,34 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
                 <Input
                   id={`value-${index}`}
                   type={condition.field === 'graduationYear' ? 'number' : 'text'}
-                  value={condition.value}
+                  value={condition.value as string}
                   onChange={(e) => handleValueChange(index, e.target.value)}
                   disabled={!condition.operator}
                 />
               )}
             </div>
+            {/* ValueTo Input for 'between' Operator */}
             {condition.operator === 'between' && (
               <div className="flex-1 min-w-[200px]">
                 <Label htmlFor={`valueTo-${index}`}>To</Label>
-                <Input
-                  id={`valueTo-${index}`}
-                  type={condition.field === 'graduationYear' ? 'number' : 'text'}
-                  value={condition.valueTo || ''}
-                  onChange={(e) => handleValueChange(index, e.target.value, true)}
-                />
+                {condition.field === 'createdAt' || condition.field === 'updatedAt' ? (
+                  <Input
+                    id={`valueTo-${index}`}
+                    type="date"
+                    value={condition.valueTo as string}
+                    onChange={(e) => handleValueChange(index, e.target.value, true)}
+                  />
+                ) : (
+                  <Input
+                    id={`valueTo-${index}`}
+                    type={condition.field === 'graduationYear' ? 'number' : 'text'}
+                    value={condition.valueTo as string}
+                    onChange={(e) => handleValueChange(index, e.target.value, true)}
+                  />
+                )}
               </div>
             )}
+            {/* Remove Condition Button */}
             <Button
               variant="ghost"
               size="icon"

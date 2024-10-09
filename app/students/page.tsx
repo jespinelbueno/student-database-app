@@ -1,5 +1,3 @@
-
-
 import { getAllStudents } from '@/lib/students'
 import StudentList from './list/StudentList'
 import { StudentGraduationYearChart } from './chart/year/StudentGraduationYearChart'

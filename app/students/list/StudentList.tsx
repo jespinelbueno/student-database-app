@@ -10,14 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-const STUDENTS_PER_PAGE = 5
+// Import the shared QueryCondition and Operator types
+import { QueryCondition} from '@/types/interfaces' // Adjust the import path as necessary
 
-interface QueryCondition {
-  field: string
-  operator: 'equals' | 'contains' | 'greaterThan' | 'lessThan' | 'between' | 'in'
-  value: string | number | boolean
-  valueTo?: string | number
-}
+const STUDENTS_PER_PAGE = 5
 
 interface StudentListProps {
   initialStudents: Student[]
@@ -39,7 +35,11 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     email: '',
     phoneNumber: '',
     promisingStudent: false,
-    schoolOrg:''
+    schoolOrg: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
   })
 
   useEffect(() => {
@@ -71,8 +71,8 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : 
-               name === 'graduationYear' ? parseInt(value, 10) : value
+      [name]:
+        type === 'checkbox' ? checked : name === 'graduationYear' ? parseInt(value, 10) : value,
     }))
   }
 
@@ -96,7 +96,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
         email: '',
         phoneNumber: '',
         promisingStudent: false,
-        schoolOrg:'',
+        schoolOrg: '',
         address: '',
         city: '',
         state: '',
@@ -120,14 +120,14 @@ export default function StudentList({ initialStudents }: StudentListProps) {
         throw new Error(errorData.error || 'Failed to update student')
       }
       const updatedStudent = await response.json()
-      const updatedStudents = students.map(s => s.id === id ? updatedStudent : s)
+      const updatedStudents = students.map(s => (s.id === id ? updatedStudent : s))
       setStudents(updatedStudents)
       setFilteredStudents(updatedStudents)
       setIsEditing(null)
       alert('Student updated successfully')
     } catch (error) {
       console.error('Error updating student:', error)
-      alert(error instanceof Error ? error.message : "Failed to update student. Please try again.")
+      alert(error instanceof Error ? error.message : 'Failed to update student. Please try again.')
     }
   }
 
@@ -148,7 +148,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
   }
 
   const handleSelectStudent = (id: number) => {
-    setSelectedStudents(prev => 
+    setSelectedStudents(prev =>
       prev.includes(id) ? prev.filter(studentId => studentId !== id) : [...prev, id]
     )
   }
@@ -206,10 +206,10 @@ export default function StudentList({ initialStudents }: StudentListProps) {
       return conditions.every(condition => {
         const { field, operator, value, valueTo } = condition
         const studentValue = student[field as keyof Student]
-        
+
         switch (operator) {
           case 'equals':
-            return studentValue === value
+            return studentValue == value // Use loose equality to handle type coercion
           case 'contains':
             return String(studentValue).toLowerCase().includes(String(value).toLowerCase())
           case 'greaterThan':
@@ -217,9 +217,14 @@ export default function StudentList({ initialStudents }: StudentListProps) {
           case 'lessThan':
             return Number(studentValue) < Number(value)
           case 'between':
-            return Number(studentValue) >= Number(value) && Number(studentValue) <= Number(valueTo)
+            return (
+              Number(studentValue) >= Number(value) && Number(studentValue) <= Number(valueTo)
+            )
           case 'in':
-            return String(value).split(',').map(v => v.trim()).includes(String(studentValue))
+            return String(value)
+              .split(',')
+              .map(v => v.trim())
+              .includes(String(studentValue))
           default:
             return true
         }
@@ -230,42 +235,39 @@ export default function StudentList({ initialStudents }: StudentListProps) {
   }
 
   return (
-    
     <Card className="w-full mx-auto">
       <CardHeader>
         <CardTitle>Student List</CardTitle>
       </CardHeader>
       <CardContent>
-      <div className="pl-0 pr-0 mb-8">
-            <Input
-              type="text"
-              placeholder="Quick search..."
-              value={searchTerm}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                setSearchTerm(e.target.value)
-                setFilteredStudents(
-                  students.filter(student => 
-                    student.firstName.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                    student.lastName.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                    student.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                    student.graduationYear.toString().includes(e.target.value) ||
-                    (student.phoneNumber ?? '').includes(e.target.value) ||
-                    (student.promisingStudent ? 'yes' : 'no').includes(e.target.value.toLowerCase())
-                  )
+        <div className="pl-0 pr-0 mb-8">
+          <Input
+            type="text"
+            placeholder="Quick search..."
+            value={searchTerm}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              setSearchTerm(e.target.value)
+              setFilteredStudents(
+                students.filter(student =>
+                  student.firstName.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                  student.lastName.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                  student.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
+                  student.graduationYear.toString().includes(e.target.value) ||
+                  (student.phoneNumber ?? '').includes(e.target.value) ||
+                  (student.promisingStudent ? 'yes' : 'no').includes(e.target.value.toLowerCase())
                 )
-                setCurrentPage(1)
-              }}
-            />
-          </div>
+              )
+              setCurrentPage(1)
+            }}
+          />
+        </div>
         <div className="flex flex-col space-y-4">
           <div className="flex justify-between items-center">
             <Button onClick={() => setShowQueryWizard(!showQueryWizard)}>
               {showQueryWizard ? 'Hide Query Wizard' : 'Show Query Wizard'}
             </Button>
             <div className="flex space-x-2">
-              <Button onClick={() => setIsCreating(true)}>
-                Add New Student
-              </Button>
+              <Button onClick={() => setIsCreating(true)}>Add New Student</Button>
               <Button onClick={handleSelectAll} variant="secondary">
                 Select All
               </Button>
@@ -282,12 +284,8 @@ export default function StudentList({ initialStudents }: StudentListProps) {
           </div>
 
           {showQueryWizard && (
-            <QueryWizard 
-              onApplyQuery={applyQuery} 
-              onClose={() => setShowQueryWizard(false)}
-            />
+            <QueryWizard onApplyQuery={applyQuery} onClose={() => setShowQueryWizard(false)} />
           )}
-          
 
           {isCreating && (
             <form onSubmit={handleCreate} className="p-4 border-b space-y-2">
@@ -330,14 +328,14 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                 onChange={handleInputChange}
                 placeholder="Phone Number"
               />
-                            <Input
+              <Input
                 type="text"
                 name="schoolOrg"
                 value={formData.schoolOrg ?? ''}
                 onChange={handleInputChange}
                 placeholder="School/Organization"
               />
-<Input
+              <Input
                 type="text"
                 name="address"
                 value={formData.address ?? ''}
@@ -370,7 +368,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                   id="promisingStudent"
                   name="promisingStudent"
                   checked={formData.promisingStudent}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={checked =>
                     setFormData(prev => ({ ...prev, promisingStudent: checked as boolean }))
                   }
                 />
@@ -378,9 +376,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
               </div>
 
               <div className="flex justify-end space-x-2">
-                <Button type="submit">
-                  Create Student
-                </Button>
+                <Button type="submit">Create Student</Button>
                 <Button type="button" onClick={() => setIsCreating(false)} variant="secondary">
                   Cancel
                 </Button>
@@ -404,7 +400,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedStudents.map((student) => (
+                {paginatedStudents.map(student => (
                   <TableRow key={student.id}>
                     <TableCell>
                       <Checkbox
@@ -417,7 +413,9 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                         <Input
                           type="text"
                           value={formData.firstName}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, firstName: e.target.value })}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setFormData({ ...formData, firstName: e.target.value })
+                          }
                           className="w-full"
                         />
                       ) : (
@@ -429,7 +427,9 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                         <Input
                           type="number"
                           value={formData.graduationYear}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, graduationYear: parseInt(e.target.value, 10) })}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setFormData({ ...formData, graduationYear: parseInt(e.target.value, 10) })
+                          }
                           className="w-full"
                         />
                       ) : (
@@ -441,9 +441,10 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                         <Input
                           type="email"
                           value={formData.email}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
                           className="w-full"
-                        
                         />
                       ) : (
                         student.email
@@ -454,7 +455,9 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                         <Input
                           type="tel"
                           value={formData.phoneNumber ?? ''}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setFormData({ ...formData, phoneNumber: e.target.value })
+                          }
                           className="w-full"
                         />
                       ) : (
@@ -466,7 +469,9 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                         <Input
                           type="text"
                           value={formData.state ?? ''}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, state: e.target.value })}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setFormData({ ...formData, state: e.target.value })
+                          }
                           className="w-full"
                         />
                       ) : (
@@ -478,9 +483,10 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                         <Input
                           type="text"
                           value={formData.schoolOrg}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, schoolOrg: e.target.value })}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            setFormData({ ...formData, schoolOrg: e.target.value })
+                          }
                           className="w-full"
-                        
                         />
                       ) : (
                         student.schoolOrg
@@ -490,7 +496,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                       {isEditing === student.id ? (
                         <Checkbox
                           checked={formData.promisingStudent}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={checked =>
                             setFormData(prev => ({ ...prev, promisingStudent: checked as boolean }))
                           }
                         />
@@ -498,7 +504,6 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                         student.promisingStudent ? 'Yes' : 'No'
                       )}
                     </TableCell>
-                    
 
                     <TableCell className="text-right">
                       {isEditing === student.id ? (
@@ -509,17 +514,13 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                           >
                             Save
                           </Button>
-                          <Button
-                            onClick={() => setIsEditing(null)}
-                            variant="secondary"
-                          >
+                          <Button onClick={() => setIsEditing(null)} variant="secondary">
                             Cancel
                           </Button>
                         </>
                       ) : (
-                        <>
-                        <div className='flex flex-col gap-3'>
-                        <Button
+                        <div className="flex flex-col gap-3">
+                          <Button
                             onClick={() => {
                               setIsEditing(student.id)
                               setFormData({
@@ -530,24 +531,25 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                                 phoneNumber: student.phoneNumber ?? '',
                                 promisingStudent: student.promisingStudent,
                                 schoolOrg: student.schoolOrg,
-                                state: student.state
+                                state: student.state,
+                                address: student.address ?? '',
+                                city: student.city ?? '',
+                                zipCode: student.zipCode ?? '',
                               })
                             }}
                             className="mr-2"
-                            size='sm'
+                            size="sm"
                           >
                             Edit
                           </Button>
                           <Button
                             onClick={() => handleDelete(student.id)}
                             variant="destructive"
-                            size='sm'
+                            size="sm"
                           >
                             Delete
                           </Button>
                         </div>
-
-                        </>
                       )}
                     </TableCell>
                   </TableRow>
