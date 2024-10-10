@@ -29,7 +29,6 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
   onEdit,
   onDelete,
   formData,
-  setFormData,
   handleUpdate,
   setIsEditing,
   handleInputChange,
