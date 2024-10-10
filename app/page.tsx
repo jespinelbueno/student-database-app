@@ -1,12 +1,30 @@
+import { getAllStudents } from '@/lib/students'
+import StudentList from './students/list/StudentList'
+import { StudentGraduationYearChart } from './students/chart/year/StudentGraduationYearChart'
+import { StudentStateDistributionChart } from './students/chart/state/StudentStateDistributionChart'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-import StudentsPage from "./students/page";
-
-export default function Home() {
+export default async function HomePage() {
+  const students = await getAllStudents()
   return (
-    <div className="bg-zinc-100 grid grid-rows-[20px_1fr_20px] m-auto justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <StudentsPage></StudentsPage>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-      </footer>
+    <div className="container bg-zinc-100 mx-auto py-10">
+      <h1 className="text-3xl font-bold mb-6">Student Management Dashboard</h1>
+      <Tabs defaultValue="list" className="w-full">
+        <TabsList>
+          <TabsTrigger value="list">Student List</TabsTrigger>
+          <TabsTrigger value="graduationChart">Graduation Year Chart</TabsTrigger>
+          <TabsTrigger value="stateChart">State Distribution Chart</TabsTrigger>
+        </TabsList>
+        <TabsContent value="list">
+          <StudentList initialStudents={students} />
+        </TabsContent>
+        <TabsContent value="graduationChart">
+          <StudentGraduationYearChart students={students} />
+        </TabsContent>
+        <TabsContent value="stateChart">
+          <StudentStateDistributionChart students={students} />
+        </TabsContent>
+      </Tabs>
+      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
     </div>
-  );
-}
+  )}
