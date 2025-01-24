@@ -24,8 +24,8 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
     <Button onClick={toggleQueryWizard}>
       {showQueryWizard ? 'Hide Query Wizard' : 'Show Query Wizard'}
     </Button>
-    <div className="flex space-x-2">
-      <Button onClick={onAdd}>Add New Student</Button>
+    <div className="flex space-x-5">
+      <Button onClick={onAdd}>Add Student</Button>
       <Button onClick={onSelectAll} variant="secondary">
         Select All
       </Button>

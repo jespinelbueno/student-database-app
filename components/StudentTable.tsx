@@ -38,7 +38,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
   setIsEditing,
   handleInputChange,
 }) => (
-  <div className="overflow-x-auto">
+  <div className="overflow-x-auto overflow-y-auto">
     <Table>
       <TableHeader>
         <TableRow>
@@ -50,7 +50,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
           <TableHead>State</TableHead>
           <TableHead>School/Organization</TableHead>
           <TableHead>Promising Student</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+          <TableHead className="">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

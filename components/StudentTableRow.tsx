@@ -146,10 +146,11 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
         </>
       ) : (
         <div className="flex flex-col gap-3">
-          <Button onClick={onEdit} className="mr-2" size="sm">
+          <Button onClick={onEdit} className="w-20" size="sm">
             Edit
           </Button>
-          <Button onClick={onDelete} variant="destructive" size="sm">
+          <Button onClick={onDelete} className='w-20'
+          variant="outline" size="sm">
             Delete
           </Button>
         </div>

@@ -1,28 +1,32 @@
 // StudentList.tsx
-'use client'
+"use client";
 
-import React, { useState, ChangeEvent, FormEvent } from 'react'
-import { Student, CreateStudentInput, UpdateStudentInput } from '@/lib/students'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import {
+  Student,
+  CreateStudentInput,
+  UpdateStudentInput,
+} from "@/lib/students";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Import modular components
-import { SearchBar } from '@/components/SearchBar'
-import { ActionButtons } from '@/components/ActionButtons'
-import { StudentForm } from '@/components/StudentForm'
-import { StudentTable } from '@/components/StudentTable'
-import { PaginationControls } from '@/components/PaginationControls'
-import QueryWizard from '@/components/queryWizard/QueryWizard'
+import { SearchBar } from "@/components/SearchBar";
+import { ActionButtons } from "@/components/ActionButtons";
+import { StudentForm } from "@/components/StudentForm";
+import { StudentTable } from "@/components/StudentTable";
+import { PaginationControls } from "@/components/PaginationControls";
+import QueryWizard from "@/components/queryWizard/QueryWizard";
 
 // Import the custom hook
-import { useStudents } from '@/hooks/useStudents'
+import { useStudents } from "@/hooks/useStudents";
 
 // Remove unused import if not needed
 // import { QueryCondition } from '@/types/interfaces'
 
-const STUDENTS_PER_PAGE = 5
+const STUDENTS_PER_PAGE = 5;
 
 interface StudentListProps {
-  initialStudents: Student[]
+  initialStudents: Student[];
 }
 
 export default function StudentList({ initialStudents }: StudentListProps) {
@@ -37,178 +41,184 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     deleteStudent,
     applyQuery,
     handleSearch,
-  } = useStudents(initialStudents)
+  } = useStudents(initialStudents);
 
   // Local UI state
-  const [isCreating, setIsCreating] = useState(false)
-  const [isEditing, setIsEditing] = useState<number | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedStudents, setSelectedStudents] = useState<number[]>([])
-  const [showQueryWizard, setShowQueryWizard] = useState(false)
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [showQueryWizard, setShowQueryWizard] = useState(false);
   const [formData, setFormData] = useState<CreateStudentInput>({
-    firstName: '',
-    lastName: '',
+    firstName: "",
+    lastName: "",
     graduationYear: new Date().getFullYear(),
-    email: '',
-    phoneNumber: '',
+    email: "",
+    phoneNumber: "",
     promisingStudent: false,
-    schoolOrg: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-  })
+    schoolOrg: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+  });
 
-  const totalPages = Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE)
+  const totalPages = Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE);
   const paginatedStudents = filteredStudents.slice(
     (currentPage - 1) * STUDENTS_PER_PAGE,
     currentPage * STUDENTS_PER_PAGE
-  )
+  );
 
   // Handle search input change
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    handleSearch(e.target.value)
-  }
+    handleSearch(e.target.value);
+  };
 
   // Handle form input change
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]:
-        type === 'checkbox'
+        type === "checkbox"
           ? checked
-          : name === 'graduationYear'
+          : name === "graduationYear"
           ? parseInt(value, 10)
           : value,
-    }))
-  }
+    }));
+  };
 
   // Handle creating a new student
   const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      await createStudent(formData)
-      setIsCreating(false)
+      await createStudent(formData);
+      setIsCreating(false);
       setFormData({
-        firstName: '',
-        lastName: '',
+        firstName: "",
+        lastName: "",
         graduationYear: new Date().getFullYear(),
-        email: '',
-        phoneNumber: '',
+        email: "",
+        phoneNumber: "",
         promisingStudent: false,
-        schoolOrg: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-      })
+        schoolOrg: "",
+        address: "",
+        city: "",
+        state: "",
+        zipCode: "",
+      });
     } catch (error) {
-      console.error('Error creating student:', error)
-      alert('Failed to create student. Please try again.')
+      console.error("Error creating student:", error);
+      alert("Failed to create student. Please try again.");
     }
-  }
+  };
 
   // Handle updating a student
   const handleUpdate = async (id: number, data: UpdateStudentInput) => {
     try {
-      await updateStudent(id, data)
-      setIsEditing(null)
-      alert('Student updated successfully')
+      await updateStudent(id, data);
+      setIsEditing(null);
+      alert("Student updated successfully");
     } catch (error) {
-      console.error('Error updating student:', error)
-      alert('Failed to update student. Please try again.')
+      console.error("Error updating student:", error);
+      alert("Failed to update student. Please try again.");
     }
-  }
+  };
 
   // Handle deleting a student
   const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this student?')) return
+    if (!confirm("Are you sure you want to delete this student?")) return;
     try {
-      await deleteStudent(id)
-      setSelectedStudents((prev) => prev.filter((selectedId) => selectedId !== id))
-      alert('Student deleted successfully')
+      await deleteStudent(id);
+      setSelectedStudents((prev) =>
+        prev.filter((selectedId) => selectedId !== id)
+      );
+      alert("Student deleted successfully");
     } catch (error) {
-      console.error('Error deleting student:', error)
-      alert('Failed to delete student. Please try again.')
+      console.error("Error deleting student:", error);
+      alert("Failed to delete student. Please try again.");
     }
-  }
+  };
 
   // Handle selecting a student
   const handleSelectStudent = (id: number) => {
     setSelectedStudents((prev) =>
-      prev.includes(id) ? prev.filter((studentId) => studentId !== id) : [...prev, id]
-    )
-  }
+      prev.includes(id)
+        ? prev.filter((studentId) => studentId !== id)
+        : [...prev, id]
+    );
+  };
 
   // Handle selecting all students on the current page
   const handleSelectAll = () => {
-    const currentPageIds = paginatedStudents.map((student) => student.id)
+    const currentPageIds = paginatedStudents.map((student) => student.id);
     setSelectedStudents((prev) => {
-      const newSelection = [...prev]
+      const newSelection = [...prev];
       currentPageIds.forEach((id) => {
         if (!newSelection.includes(id)) {
-          newSelection.push(id)
+          newSelection.push(id);
         }
-      })
-      return newSelection
-    })
-  }
+      });
+      return newSelection;
+    });
+  };
 
   // Handle deselecting all students on the current page
   const handleDeselectAll = () => {
-    const currentPageIds = paginatedStudents.map((student) => student.id)
-    setSelectedStudents((prev) => prev.filter((id) => !currentPageIds.includes(id)))
-  }
+    const currentPageIds = paginatedStudents.map((student) => student.id);
+    setSelectedStudents((prev) =>
+      prev.filter((id) => !currentPageIds.includes(id))
+    );
+  };
 
   // Handle downloading selected students
   const handleDownloadSelected = async () => {
     try {
-      const response = await fetch('/api/download-students', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/download-students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentIds: selectedStudents }),
-      })
+      });
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Failed to generate spreadsheet: ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`Failed to generate spreadsheet: ${errorText}`);
       }
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.style.display = 'none'
-      a.href = url
-      a.download = 'selected_students.xlsx'
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = "selected_students.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error: unknown) {
-      console.error('Error downloading students:', error)
+      console.error("Error downloading students:", error);
       if (error instanceof Error) {
-        alert(`Failed to download students: ${error.message}`)
+        alert(`Failed to download students: ${error.message}`);
       } else {
-        alert('An unexpected error occurred while downloading students')
+        alert("An unexpected error occurred while downloading students");
       }
     }
-  }
+  };
 
   // Handle editing a student
   const handleEditStudent = (student: Student) => {
-    setIsEditing(student.id)
+    setIsEditing(student.id);
     setFormData({
       firstName: student.firstName,
       lastName: student.lastName,
       graduationYear: student.graduationYear,
       email: student.email,
-      phoneNumber: student.phoneNumber ?? '',
+      phoneNumber: student.phoneNumber ?? "",
       promisingStudent: student.promisingStudent,
       schoolOrg: student.schoolOrg,
       state: student.state,
-      address: student.address ?? '',
-      city: student.city ?? '',
-      zipCode: student.zipCode ?? '',
-    })
-  }
+      address: student.address ?? "",
+      city: student.city ?? "",
+      zipCode: student.zipCode ?? "",
+    });
+  };
 
   // Return JSX
 
@@ -220,7 +230,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
           <p>Loading students...</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   // Handle error state
@@ -231,7 +241,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
           <p className="text-red-500">{error}</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -241,7 +251,10 @@ export default function StudentList({ initialStudents }: StudentListProps) {
       </CardHeader>
       <CardContent>
         {/* Search Bar */}
-        <SearchBar searchTerm={searchTerm} onSearchChange={handleSearchChange} />
+        <SearchBar
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+        />
 
         {/* Action Buttons */}
         <ActionButtons
@@ -256,7 +269,13 @@ export default function StudentList({ initialStudents }: StudentListProps) {
 
         {/* Query Wizard */}
         {showQueryWizard && (
-          <QueryWizard onApplyQuery={applyQuery} onClose={() => setShowQueryWizard(false)} />
+          <>
+            <br />
+            <QueryWizard
+              onApplyQuery={applyQuery}
+              onClose={() => setShowQueryWizard(false)}
+            />
+          </>
         )}
 
         {/* Student Form for Creating */}
@@ -269,6 +288,8 @@ export default function StudentList({ initialStudents }: StudentListProps) {
             isEditing={false}
           />
         )}
+
+        <br />
 
         {/* Student Table */}
         <StudentTable
@@ -296,10 +317,12 @@ export default function StudentList({ initialStudents }: StudentListProps) {
             currentPage={currentPage}
             totalPages={totalPages}
             onPrevious={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            onNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onNext={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
           />
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

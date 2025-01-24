@@ -18,11 +18,14 @@ export function StudentStateDistributionChart({ students }: StudentStateDistribu
       return acc
     }, {} as Record<string, number>)
 
-    return Object.entries(stateCounts)
+    const data = Object.entries(stateCounts)
       .map(([state, count]) => ({ state, count }))
       .sort((a, b) => b.count - a.count) // Sort by count in descending order
+
+    return data
   }, [students])
 
+  console.log("Processed chartData in StudentStateDistributionChart:", chartData);
   return (
     <Card className="w-full">
       <CardHeader>
@@ -35,7 +38,7 @@ export function StudentStateDistributionChart({ students }: StudentStateDistribu
             <XAxis type="number" />
             <YAxis dataKey="state" type="category" />
             <Tooltip />
-            <Bar dataKey="count" fill="hsl(var(--primary))" />
+            <Bar dataKey="count" fill="rgb(16 185 129)" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

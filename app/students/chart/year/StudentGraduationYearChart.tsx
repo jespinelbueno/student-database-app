@@ -22,6 +22,8 @@ export function StudentGraduationYearChart({ students }: StudentGraduationYearCh
       .sort((a, b) => a.year - b.year)
   }, [students])
 
+  console.log("Processed chartData in StudentGraduationYearChart:", chartData);
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -47,7 +49,7 @@ export function StudentGraduationYearChart({ students }: StudentGraduationYearCh
             />
             <Bar
               dataKey="count"
-              fill="hsl(var(--primary))"
+              fill="rgb(16 185 129)"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
