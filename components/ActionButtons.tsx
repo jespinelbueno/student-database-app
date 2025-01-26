@@ -20,7 +20,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
   showQueryWizard,
   toggleQueryWizard,
 }) => (
-  <div className="flex justify-between items-center">
+  <div className="flex justify-between items-center flex-wrap gap-3">
     <Button onClick={toggleQueryWizard}>
       {showQueryWizard ? 'Hide Query Wizard' : 'Show Query Wizard'}
     </Button>

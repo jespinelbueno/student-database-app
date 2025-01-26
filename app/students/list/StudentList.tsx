@@ -249,7 +249,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
       <CardHeader>
         <CardTitle>Student List</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-col flex gap-3">
         {/* Search Bar */}
         <SearchBar
           searchTerm={searchTerm}

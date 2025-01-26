@@ -1,11 +1,36 @@
+"use client";
 
-import { getAllStudents } from "@/lib/students";
+import React, { useState, useEffect } from "react";
+import { Student } from "@/lib/students"; // Ensure you import the Student type
 import StudentList from "./students/list/StudentList";
-import { StudentMainChart } from "./students/chart/main/StudentMainChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SheetUploader } from "./students/sheets/SheetUploader";
+import { StudentMainChart } from "./students/chart/StudentMainChart";
 
-export default async function HomePage() {
-  const students = await getAllStudents();
+export default function HomePage() {
+  const [students, setStudents] = useState<Student[]>([]); // Explicitly type the state
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchStudents = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/students");
+      if (!response.ok) {
+        throw new Error("Failed to fetch students");
+      }
+      const data: Student[] = await response.json(); // Type the API response
+      setStudents(data); // This now works since students is explicitly typed
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
   return (
     <div className="container bg-zinc-100 mx-auto py-10">
       <h1 className="text-3xl font-bold mb-6">Student Management Dashboard</h1>
@@ -13,18 +38,23 @@ export default async function HomePage() {
         <TabsList>
           <TabsTrigger value="list">Student List</TabsTrigger>
           <TabsTrigger value="charts">Charts</TabsTrigger>
+          <TabsTrigger value="import">Import from Sheets</TabsTrigger>
 
         </TabsList>
         <TabsContent value="list">
-          <StudentList initialStudents={students} />
+          {isLoading ? (
+            <p>Loading students...</p>
+          ) : (
+            <StudentList initialStudents={students} />
+          )}
         </TabsContent>
         <TabsContent value="charts">
           <StudentMainChart initialStudents={students}></StudentMainChart>
         </TabsContent>
+        <TabsContent value="import">
+          <SheetUploader onRefresh={fetchStudents} />
+        </TabsContent>
       </Tabs>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center"></footer>
     </div>
   );
-
-  
 }

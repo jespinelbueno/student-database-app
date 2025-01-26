@@ -22,15 +22,33 @@ export type Student = {
 export type CreateStudentInput = Omit<Student, 'id' | 'createdAt' | 'updatedAt'>
 export type UpdateStudentInput = Partial<CreateStudentInput>
 
-export async function createStudent(data: CreateStudentInput): Promise<Student | null> {
+export async function createStudent(data: CreateStudentInput): Promise<Student> {
   try {
-    const student = await prisma.student.create({ data })
+    console.log('Creating student with data:', data);  // Log the data being passed to createStudent
+
+    const student = await prisma.student.create({
+      data: {
+        ...data,
+        state: data.state || null,  // Ensure this handles null values correctly
+      }
+    })
+
+    console.log('Created student:', student);  // Log the created student object
     return student
   } catch (error) {
-    console.error('Error creating student:', error)
-    return null
+    console.error('Error creating student:', error)  // Log detailed error
+    throw new Error('Failed to create student')
   }
 }
+
+export async function createStudents(data: CreateStudentInput[]): Promise<Student[]> {
+  if (!Array.isArray(data)) {
+    throw new TypeError('Expected data to be an array of CreateStudentInput');
+  }
+
+  return Promise.all(data.map((item) => createStudent(item)));
+}
+
 
 export async function updateStudent(id: number, data: UpdateStudentInput): Promise<Student | null> {
   try {
