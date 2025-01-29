@@ -1,14 +1,17 @@
-import { NextResponse } from 'next/server';
-import { updateStudent, deleteStudent } from '@/lib/students';
-import { UpdateStudentInput } from '@/lib/students';
+import { NextRequest, NextResponse } from "next/server";
+import { updateStudent, deleteStudent } from "@/lib/students";
+import { UpdateStudentInput } from "@/lib/students";
 
+// Correct PUT request handler
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    // Extract and validate ID
-    const studentId = parseInt(params.id, 10);
+    const { id } = context.params;
+
+    // Ensure ID is a valid number
+    const studentId = parseInt(id, 10);
     if (isNaN(studentId)) {
       return NextResponse.json(
         { error: "Invalid numeric ID" },
@@ -17,7 +20,7 @@ export async function PUT(
     }
 
     // Process update
-    const data: UpdateStudentInput = await request.json();
+    const data: UpdateStudentInput = await req.json();
     const updatedStudent = await updateStudent(studentId, data);
     
     if (!updatedStudent) {
@@ -29,7 +32,7 @@ export async function PUT(
     
     return NextResponse.json(updatedStudent);
   } catch (error) {
-    console.error('PUT error:', error);
+    console.error("PUT error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -37,13 +40,16 @@ export async function PUT(
   }
 }
 
+// Correct DELETE request handler
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    // Extract and validate ID
-    const studentId = parseInt(params.id, 10);
+    const { id } = context.params;
+
+    // Ensure ID is a valid number
+    const studentId = parseInt(id, 10);
     if (isNaN(studentId)) {
       return NextResponse.json(
         { error: "Invalid numeric ID" },
@@ -60,11 +66,9 @@ export async function DELETE(
       );
     }
     
-    return NextResponse.json(
-      { message: "Student deleted successfully" }
-    );
+    return NextResponse.json({ message: "Student deleted successfully" });
   } catch (error) {
-    console.error('DELETE error:', error);
+    console.error("DELETE error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
