@@ -3,6 +3,7 @@ import { updateStudent, deleteStudent } from "@/lib/students";
 import { UpdateStudentInput } from "@/lib/students";
 
 // ✅ Await params inside the function
+//changes 
 export async function PUT(
   req: Request,
   context: { params: Promise<{ id: string }> } // 👈 Use Promise<{ id: string }>
