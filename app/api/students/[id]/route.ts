@@ -1,48 +1,63 @@
-import { NextResponse } from 'next/server'
-import { updateStudent, deleteStudent } from '@/lib/students'
-import { UpdateStudentInput } from '@/lib/students'
+// app/api/students/[id]/route.ts
+import { NextResponse } from 'next/server';
+import { updateStudent, deleteStudent } from '@/lib/students';
+import { UpdateStudentInput } from '@/lib/students';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { [key: string]: string | string[] } } // <-- Use dynamic typing
 ) {
   try {
-    const id = parseInt(params.id, 10)
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
+    // Extract and validate the ID
+    const { id } = context.params;
+    if (!id || Array.isArray(id)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
-    const data: UpdateStudentInput = await request.json()
-    const updatedStudent = await updateStudent(id, data)
+    const studentId = parseInt(id, 10);
+    if (isNaN(studentId)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
+    // Process the update
+    const data: UpdateStudentInput = await request.json();
+    const updatedStudent = await updateStudent(studentId, data);
     
     if (!updatedStudent) {
-      return NextResponse.json({ error: 'Student not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
     
-    return NextResponse.json(updatedStudent)
+    return NextResponse.json(updatedStudent);
   } catch (error) {
-    console.error('Error in PUT /api/students/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error in PUT /api/students/[id]:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { [key: string]: string | string[] } } // <-- Same fix here
 ) {
   try {
-    const id = parseInt(params.id, 10)
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
+    // Extract and validate the ID
+    const { id } = context.params;
+    if (!id || Array.isArray(id)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
-    const success = await deleteStudent(id)
+    const studentId = parseInt(id, 10);
+    if (isNaN(studentId)) {
+      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
+
+    // Process the deletion
+    const success = await deleteStudent(studentId);
     
     if (!success) {
-      return NextResponse.json({ error: 'Student not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
     
-    return NextResponse.json({ message: 'Student deleted successfully' })
+    return NextResponse.json({ message: 'Student deleted successfully' });
   } catch (error) {
-    console.error('Error in DELETE /api/students/[id]:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error in DELETE /api/students/[id]:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
