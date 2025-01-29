@@ -1,22 +1,14 @@
-// app/api/students/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { updateStudent, deleteStudent } from '@/lib/students';
 import { UpdateStudentInput } from '@/lib/students';
 
 export async function PUT(
   request: Request,
-  { params }: { params: Record<string, string | string[]> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Extract and validate ID
-    const id = params.id;
-    if (Array.isArray(id)) {
-      return NextResponse.json(
-        { error: "Invalid ID format" },
-        { status: 400 }
-      );
-    }
-    const studentId = parseInt(id, 10);
+    const studentId = parseInt(params.id, 10);
     if (isNaN(studentId)) {
       return NextResponse.json(
         { error: "Invalid numeric ID" },
@@ -47,18 +39,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Record<string, string | string[]> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Extract and validate ID
-    const id = params.id;
-    if (Array.isArray(id)) {
-      return NextResponse.json(
-        { error: "Invalid ID format" },
-        { status: 400 }
-      );
-    }
-    const studentId = parseInt(id, 10);
+    const studentId = parseInt(params.id, 10);
     if (isNaN(studentId)) {
       return NextResponse.json(
         { error: "Invalid numeric ID" },
