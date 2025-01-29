@@ -5,59 +5,84 @@ import { UpdateStudentInput } from '@/lib/students';
 
 export async function PUT(
   request: Request,
-  context: { params: { [key: string]: string | string[] } } // <-- Use dynamic typing
+  { params }: { params: Record<string, string | string[]> }
 ) {
   try {
-    // Extract and validate the ID
-    const { id } = context.params;
-    if (!id || Array.isArray(id)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    // Extract and validate ID
+    const id = params.id;
+    if (Array.isArray(id)) {
+      return NextResponse.json(
+        { error: "Invalid ID format" },
+        { status: 400 }
+      );
     }
     const studentId = parseInt(id, 10);
     if (isNaN(studentId)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid numeric ID" },
+        { status: 400 }
+      );
     }
 
-    // Process the update
+    // Process update
     const data: UpdateStudentInput = await request.json();
     const updatedStudent = await updateStudent(studentId, data);
     
     if (!updatedStudent) {
-      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Student not found" },
+        { status: 404 }
+      );
     }
     
     return NextResponse.json(updatedStudent);
   } catch (error) {
-    console.error('Error in PUT /api/students/[id]:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('PUT error:', error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
 export async function DELETE(
   request: Request,
-  context: { params: { [key: string]: string | string[] } } // <-- Same fix here
+  { params }: { params: Record<string, string | string[]> }
 ) {
   try {
-    // Extract and validate the ID
-    const { id } = context.params;
-    if (!id || Array.isArray(id)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    // Extract and validate ID
+    const id = params.id;
+    if (Array.isArray(id)) {
+      return NextResponse.json(
+        { error: "Invalid ID format" },
+        { status: 400 }
+      );
     }
     const studentId = parseInt(id, 10);
     if (isNaN(studentId)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid numeric ID" },
+        { status: 400 }
+      );
     }
 
-    // Process the deletion
+    // Process deletion
     const success = await deleteStudent(studentId);
-    
     if (!success) {
-      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Student not found" },
+        { status: 404 }
+      );
     }
     
-    return NextResponse.json({ message: 'Student deleted successfully' });
+    return NextResponse.json(
+      { message: "Student deleted successfully" }
+    );
   } catch (error) {
-    console.error('Error in DELETE /api/students/[id]:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('DELETE error:', error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
