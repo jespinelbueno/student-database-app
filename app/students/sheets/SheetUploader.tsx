@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface SheetUploaderProps {
@@ -44,25 +50,55 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
       State: "state",
       "Zip Code": "zipCode",
     };
-
-    return data.map((row) => {
+  
+    const students: UploadedStudent[] = data.map((row) => {
       const student: Partial<UploadedStudent> = {};
       Object.entries(row).forEach(([key, value]) => {
         const mappedKey = columnMap[key];
         if (mappedKey) {
           if (mappedKey === "graduationYear") {
-            student[mappedKey] = isNaN(Number(value)) ? undefined : Number(value);
+            student[mappedKey] = isNaN(Number(value))
+              ? undefined
+              : Number(value);
           } else if (mappedKey === "promisingStudent") {
             student[mappedKey] = value === "true" || value === true;
           } else {
-            student[mappedKey] =  typeof value === "string" ? value : value?.toString() || undefined;
+            student[mappedKey] =
+              typeof value === "string"
+                ? value
+                : value?.toString() || undefined;
           }
         }
       });
       return student as UploadedStudent;
     });
+  
+    // Check for duplicates based on email
+    const seen = new Set<string>();
+    const duplicates: UploadedStudent[] = [];
+    const uniqueStudents: UploadedStudent[] = [];
+  
+    students.forEach((student) => {
+      if (seen.has(student.email)) {
+        duplicates.push(student);
+      } else {
+        seen.add(student.email);
+        uniqueStudents.push(student);
+      }
+    });
+  
+    if (duplicates.length > 0) {
+      setErrorMessage(
+        `Duplicate students detected. Please remove duplicates before proceeding. Duplicates: ${duplicates
+          .map((d) => `${d.firstName} ${d.lastName} (${d.email})`)
+          .join(", ")}`
+      );
+      return [];
+    }
+  
+    return uniqueStudents;
   };
-
+  
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     const reader = new FileReader();
@@ -96,6 +132,32 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
   const handleApproveAndUpload = async () => {
     setIsLoading(true);
     try {
+      // Fetch existing emails from the database
+      const existingEmailsResponse = await fetch("/api/emails");
+      if (!existingEmailsResponse.ok) {
+        throw new Error("Failed to fetch existing student emails");
+      }
+      
+      const existingEmails: string[] = await existingEmailsResponse.json();
+
+      // Normalize email case for comparison
+      const normalizedExistingEmails = existingEmails.map(email => email.toLowerCase());
+      const uploadedEmails = previewData.map(student => student.email.toLowerCase());
+
+      // Find duplicates
+      const duplicates = uploadedEmails.filter(email => 
+        normalizedExistingEmails.includes(email)
+      );
+
+      if (duplicates.length > 0) {
+        setErrorMessage(
+          `These students already exist in the database: ${duplicates.join(", ")}`
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Proceed with upload if no duplicates
       const response = await fetch("/api/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -112,10 +174,19 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
       if (onRefresh) onRefresh();
     } catch (error) {
       console.error("Error uploading students:", error);
-      setErrorMessage("Failed to upload students. Please try again.");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to upload students. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
+  };
+
+
+  const handleCancel = () => {
+    setIsLoading(false);
+    setPreviewData([]); // Clear preview data
+    setErrorMessage(null); // Clear any error messages
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -139,21 +210,33 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
             <ul className="list-disc list-inside">
               {previewData.map((student, index) => (
                 <li key={index}>
-                  {student.firstName} {student.lastName} - {student.email}
+                  {student.firstName} {student.lastName} - {student.email} -{" "}
+                  {student.graduationYear} - {student.phoneNumber} -{" "}
+                  {student.schoolOrg} - {student.state}
                 </li>
               ))}
             </ul>
-            <Button
-              className="mt-4"
-              onClick={handleApproveAndUpload}
-              disabled={isLoading}
-            >
-              {isLoading ? "Uploading..." : "Approve and Upload"}
-            </Button>
+            <div className="Buttons flex flex-wrap gap-3">
+              {" "}
+              <Button
+                className="mt-4"
+                onClick={handleApproveAndUpload}
+                disabled={isLoading}
+              >
+                {isLoading ? "Uploading..." : "Approve and Upload"}
+              </Button>
+              <Button className="mt-4" onClick={handleCancel}>
+                Cancel
+              </Button>
+            </div>
           </div>
         )}
+
         {errorMessage && <p className="mt-4 text-red-500">{errorMessage}</p>}
       </CardContent>
+      <CardFooter>
+        You can upload a maximum of 30 students at a time.
+      </CardFooter>
     </Card>
   );
 }

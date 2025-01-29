@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Student Database App',
+  title: 'Student Management App',
   description: 'Manage your student records',
 }
 

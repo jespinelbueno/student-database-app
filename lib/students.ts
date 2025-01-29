@@ -80,3 +80,17 @@ export async function deleteStudent(id: number): Promise<boolean> {
     return false
   }
 }
+
+
+
+export async function getAllStudentEmails(): Promise<string[]> {
+  try {
+    const students = await prisma.student.findMany({
+      select: { email: true },
+    });
+    return students.map(student => student.email);
+  } catch (error) {
+    console.error('Error fetching student emails:', error);
+    throw new Error('Failed to fetch student emails');
+  }
+}

@@ -248,6 +248,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     <Card className="w-full mx-auto">
       <CardHeader>
         <CardTitle>Student List</CardTitle>
+        <h1> Total number of students: <strong>{initialStudents.length}</strong></h1>
       </CardHeader>
       <CardContent className="flex-col flex gap-3">
         {/* Search Bar */}
