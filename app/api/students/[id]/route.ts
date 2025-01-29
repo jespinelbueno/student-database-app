@@ -1,22 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { updateStudent, deleteStudent } from "@/lib/students";
 import { UpdateStudentInput } from "@/lib/students";
 
-// Correct PUT request handler
+// ✅ Await params inside the function
 export async function PUT(
-  req: NextRequest,
-  context: { params: { id: string } }
+  req: Request,
+  context: { params: Promise<{ id: string }> } // 👈 Use Promise<{ id: string }>
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params; // 👈 Await params
 
-    // Ensure ID is a valid number
-    const studentId = parseInt(id, 10);
+    const studentId = Number(id);
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        { error: "Invalid numeric ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid numeric ID" }, { status: 400 });
     }
 
     // Process update
@@ -24,54 +20,37 @@ export async function PUT(
     const updatedStudent = await updateStudent(studentId, data);
     
     if (!updatedStudent) {
-      return NextResponse.json(
-        { error: "Student not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
-    
+
     return NextResponse.json(updatedStudent);
   } catch (error) {
     console.error("PUT error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// Correct DELETE request handler
+// ✅ Apply the same fix for DELETE
 export async function DELETE(
-  req: NextRequest,
-  context: { params: { id: string } }
+  req: Request,
+  context: { params: Promise<{ id: string }> } // 👈 Use Promise<{ id: string }>
 ) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params; // 👈 Await params
 
-    // Ensure ID is a valid number
-    const studentId = parseInt(id, 10);
+    const studentId = Number(id);
     if (isNaN(studentId)) {
-      return NextResponse.json(
-        { error: "Invalid numeric ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid numeric ID" }, { status: 400 });
     }
 
-    // Process deletion
     const success = await deleteStudent(studentId);
     if (!success) {
-      return NextResponse.json(
-        { error: "Student not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Student not found" }, { status: 404 });
     }
     
     return NextResponse.json({ message: "Student deleted successfully" });
   } catch (error) {
     console.error("DELETE error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
