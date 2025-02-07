@@ -33,7 +33,7 @@ export default function HomePage() {
 
   return (
     <div className="container bg-zinc-900 mx-auto py-10">
-      <h1 className="text-4xl font-bold mb-8 text-zinc-100 tracking-tight">Student Management Dashboard</h1>
+      <h1 className="text-4xl font-bold mb-8 text-zinc-100 tracking-tight">Future Scholars Dashboard</h1>
       <Tabs defaultValue="list" className="w-full">
         <TabsList className="bg-zinc-800 p-1">
           <TabsTrigger value="list" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Student List</TabsTrigger>
