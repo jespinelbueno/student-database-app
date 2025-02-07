@@ -36,7 +36,7 @@ export function MainNav({ session }: MainNavProps) {
               </span>
               <Button
                 variant="outline"
-                className="text-zinc-100 border-zinc-700 hover:bg-zinc-700"
+                className="text-zinc-100 bg-zinc-500 border-zinc-700 hover:bg-zinc-700"
                 onClick={() => signOut()}
               >
                 Sign Out
@@ -46,7 +46,7 @@ export function MainNav({ session }: MainNavProps) {
             <Link href="/auth/signin">
               <Button
                 variant="outline"
-                className="text-zinc-100 border-zinc-700 hover:bg-zinc-700"
+                className="text-zinc-100 border-zinc-700 bg-zinc-500 hover:bg-zinc-700"
               >
                 Sign In
               </Button>

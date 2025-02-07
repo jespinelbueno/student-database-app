@@ -110,7 +110,12 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
     <Card className="w-full bg-zinc-800 border-zinc-700">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-zinc-100">Advanced Query</CardTitle>
-        <Button variant="ghost" size="icon" onClick={onClose} className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onClose} 
+          className="text-zinc-400 hover:text-zinc-100 bg-zinc-500 hover:bg-zinc-700"
+        >
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </Button>
@@ -220,7 +225,7 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
               variant="ghost"
               size="icon"
               onClick={() => removeCondition(index)}
-              className="mb-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700"
+              className="mb-2 text-zinc-400 hover:text-zinc-100 bg-zinc-500 hover:bg-zinc-700"
             >
               <X className="h-4 w-4" />
               <span className="sr-only">Remove condition</span>
@@ -229,10 +234,17 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
         ))}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={addCondition} className="border-zinc-700 text-zinc-100 hover:bg-zinc-700">
+        <Button 
+          variant="outline" 
+          onClick={addCondition} 
+          className="border-zinc-700 text-zinc-100 bg-zinc-500 hover:bg-zinc-700"
+        >
           <Plus className="mr-2 h-4 w-4" /> Add Condition
         </Button>
-        <Button onClick={handleApplyQuery} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button 
+          onClick={handleApplyQuery} 
+          className="bg-zinc-500 hover:bg-zinc-700 text-zinc-100"
+        >
           <Search className="mr-2 h-4 w-4" /> Apply Query
         </Button>
       </CardFooter>

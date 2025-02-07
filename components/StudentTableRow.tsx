@@ -142,19 +142,19 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
     <TableCell className="text-right">
       {isEditing ? (
         <>
-          <Button onClick={() => handleUpdate(student.id, formData)} className="mr-2">
+          <Button onClick={() => handleUpdate(student.id, formData)} className="mr-2 bg-emerald-600 hover:bg-emerald-700">
             Save
           </Button>
-          <Button onClick={() => setIsEditing(null)} variant="secondary">
+          <Button onClick={() => setIsEditing(null)} variant="secondary" className="bg-zinc-500 hover:bg-zinc-700">
             Cancel
           </Button>
         </>
       ) : (
         <div className="flex flex-col gap-3">
-          <Button onClick={onEdit} className="w-20" size="sm">
+          <Button onClick={onEdit} className="w-20 bg-zinc-500 hover:bg-zinc-700" size="sm">
             Edit
           </Button>
-          <Button onClick={onDelete} className='w-20 text-black'
+          <Button onClick={onDelete} className='w-20 bg-zinc-500 hover:bg-zinc-700 text-zinc-100'
           variant="outline" size="sm">
             Delete
           </Button>

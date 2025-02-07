@@ -115,8 +115,10 @@ export const StudentForm: React.FC<StudentFormProps> = ({
     </div>
 
     <div className="flex justify-end space-x-2">
-      <Button type="submit">{isEditing ? 'Save Changes' : 'Create Student'}</Button>
-      <Button type="button" onClick={onCancel} variant="secondary">
+      <Button type="submit" className={isEditing ? "bg-emerald-600 hover:bg-emerald-700" : "bg-emerald-600 hover:bg-emerald-700"}>
+        {isEditing ? 'Save Changes' : 'Create Student'}
+      </Button>
+      <Button type="button" onClick={onCancel} variant="secondary" className="bg-zinc-500 hover:bg-zinc-700">
         Cancel
       </Button>
     </div>
