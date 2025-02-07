@@ -1,5 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 interface SearchBarProps {
   searchTerm: string;
@@ -7,12 +8,16 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, onSearchChange }) => (
-  <div className="pl-0 pr-0 mb-8">
-    <Input
-      type="text"
-      placeholder="Quick search..."
-      value={searchTerm}
-      onChange={onSearchChange}
-    />
+  <div className="flex gap-2">
+    <div className="flex-1 relative">
+      <Input
+        type="text"
+        value={searchTerm}
+        onChange={onSearchChange}
+        placeholder="Type to search..."
+        className="bg-zinc-900 border-zinc-700 text-zinc-100 pr-8"
+      />
+      <Search className="h-4 w-4 absolute right-3 top-3 text-zinc-400" />
+    </div>
   </div>
 );

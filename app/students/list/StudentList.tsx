@@ -7,7 +7,7 @@ import {
   CreateStudentInput,
   UpdateStudentInput
 } from "@/lib/students";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 // Import modular components
 import { SearchBar } from "@/components/SearchBar";
@@ -252,13 +252,11 @@ export default function StudentList({ initialStudents }: StudentListProps) {
         <h1 className="text-zinc-400"> Total number of students: <strong className="text-zinc-100">{initialStudents.length}</strong></h1>
       </CardHeader>
       <CardContent className="flex-col flex gap-4">
-        {/* AI Components */}
+        {/* AI Components and Search */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <NaturalLanguageSearch 
             onSearchResults={(results) => {
-              // Update the filtered students with the search results
               handleSearch(""); // Clear the current search
-              // Apply each filter from the NL search results
               applyQuery(results.filters.map(filter => ({
                 field: filter.field,
                 operator: filter.operation,
@@ -267,14 +265,21 @@ export default function StudentList({ initialStudents }: StudentListProps) {
               setCurrentPage(1); // Reset to first page
             }} 
           />
-
+          <Card className="w-full bg-zinc-800 border-zinc-700">
+            <CardHeader>
+              <CardTitle className="text-zinc-100">Quick Search</CardTitle>
+              <CardDescription className="text-zinc-400">
+                Search by name, email, or any other field
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SearchBar
+                searchTerm={searchTerm}
+                onSearchChange={handleSearchChange}
+              />
+            </CardContent>
+          </Card>
         </div>
-
-        {/* Search Bar */}
-        <SearchBar
-          searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
-        />
 
         {/* Action Buttons */}
         <ActionButtons
