@@ -94,3 +94,38 @@ export async function getAllStudentEmails(): Promise<string[]> {
     throw new Error('Failed to fetch student emails');
   }
 }
+
+export interface DocumentAnalysis {
+  extractedData: StudentData;
+  confidence: number;
+  missingFields: string[];
+  suggestedActions: string[];
+}
+
+export interface StudentData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  graduationYear: number;
+  phoneNumber?: string;
+  promisingStudent?: boolean;
+  schoolOrg: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+}
+
+export interface NLQueryResult {
+  students: Student[];
+  queryInterpretation: string;
+  filters: QueryFilter[];
+  confidence: number;
+}
+
+export interface QueryFilter {
+  field: keyof Student;
+  operation: 'equals' | 'contains' | 'greaterThan' | 'lessThan' | 'between';
+  value: any;
+  confidence: number;
+}

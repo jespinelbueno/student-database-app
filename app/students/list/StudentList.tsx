@@ -6,6 +6,7 @@ import {
   Student,
   CreateStudentInput,
   UpdateStudentInput,
+  StudentData,
 } from "@/lib/students";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -16,6 +17,8 @@ import { StudentForm } from "@/components/StudentForm";
 import { StudentTable } from "@/components/StudentTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import QueryWizard from "@/components/queryWizard/QueryWizard";
+import { AIDocumentProcessor } from '@/components/AIDocumentProcessor'
+import { NaturalLanguageSearch } from '@/components/NaturalLanguageSearch'
 
 // Import the custom hook
 import { useStudents } from "@/hooks/useStudents";
@@ -251,6 +254,38 @@ export default function StudentList({ initialStudents }: StudentListProps) {
         <h1 className="text-zinc-400"> Total number of students: <strong className="text-zinc-100">{initialStudents.length}</strong></h1>
       </CardHeader>
       <CardContent className="flex-col flex gap-4">
+        {/* AI Components */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <NaturalLanguageSearch 
+            onSearchResults={(results) => {
+              // Update the filtered students with the search results
+              handleSearch(""); // Clear the current search
+              // Apply each filter from the NL search results
+              applyQuery(results.filters.map(filter => ({
+                field: filter.field,
+                operator: filter.operation,
+                value: filter.value
+              })));
+              setCurrentPage(1); // Reset to first page
+            }} 
+          />
+          <AIDocumentProcessor 
+            onProcessComplete={(data: StudentData) => {
+              // Convert StudentData to CreateStudentInput
+              setFormData({
+                ...data,
+                promisingStudent: data.promisingStudent || false, // Provide default value
+                graduationYear: data.graduationYear,
+                schoolOrg: data.schoolOrg || "", // Provide default value
+                email: data.email,
+                firstName: data.firstName,
+                lastName: data.lastName,
+              });
+              setIsCreating(true);
+            }} 
+          />
+        </div>
+
         {/* Search Bar */}
         <SearchBar
           searchTerm={searchTerm}
