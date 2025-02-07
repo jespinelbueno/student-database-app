@@ -32,18 +32,17 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container bg-zinc-100 mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">Student Management Dashboard</h1>
+    <div className="container bg-zinc-900 mx-auto py-10">
+      <h1 className="text-4xl font-bold mb-8 text-zinc-100 tracking-tight">Student Management Dashboard</h1>
       <Tabs defaultValue="list" className="w-full">
-        <TabsList>
-          <TabsTrigger value="list">Student List</TabsTrigger>
-          <TabsTrigger value="charts">Charts</TabsTrigger>
-          <TabsTrigger value="import">Import from Sheets</TabsTrigger>
-
+        <TabsList className="bg-zinc-800 p-1">
+          <TabsTrigger value="list" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Student List</TabsTrigger>
+          <TabsTrigger value="charts" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Charts</TabsTrigger>
+          <TabsTrigger value="import" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Import from Sheets</TabsTrigger>
         </TabsList>
         <TabsContent value="list">
           {isLoading ? (
-            <p>Loading students...</p>
+            <p className="text-zinc-400">Loading students...</p>
           ) : (
             <StudentList initialStudents={students} />
           )}

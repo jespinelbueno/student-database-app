@@ -225,9 +225,9 @@ export default function StudentList({ initialStudents }: StudentListProps) {
   // Handle loading state
   if (isLoading) {
     return (
-      <Card className="w-full mx-auto">
+      <Card className="w-full mx-auto bg-zinc-800 border-zinc-700">
         <CardContent>
-          <p>Loading students...</p>
+          <p className="text-zinc-400">Loading students...</p>
         </CardContent>
       </Card>
     );
@@ -236,21 +236,21 @@ export default function StudentList({ initialStudents }: StudentListProps) {
   // Handle error state
   if (error) {
     return (
-      <Card className="w-full mx-auto">
+      <Card className="w-full mx-auto bg-zinc-800 border-zinc-700">
         <CardContent>
-          <p className="text-red-500">{error}</p>
+          <p className="text-red-400">{error}</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="w-full mx-auto">
+    <Card className="w-full mx-auto bg-zinc-800 border-zinc-700">
       <CardHeader>
-        <CardTitle>Student List</CardTitle>
-        <h1> Total number of students: <strong>{initialStudents.length}</strong></h1>
+        <CardTitle className="text-zinc-100">Student List</CardTitle>
+        <h1 className="text-zinc-400"> Total number of students: <strong className="text-zinc-100">{initialStudents.length}</strong></h1>
       </CardHeader>
-      <CardContent className="flex-col flex gap-3">
+      <CardContent className="flex-col flex gap-4">
         {/* Search Bar */}
         <SearchBar
           searchTerm={searchTerm}
@@ -270,58 +270,61 @@ export default function StudentList({ initialStudents }: StudentListProps) {
 
         {/* Query Wizard */}
         {showQueryWizard && (
-          <>
-            <br />
+          <div className="mt-4">
             <QueryWizard
               onApplyQuery={applyQuery}
               onClose={() => setShowQueryWizard(false)}
             />
-          </>
+          </div>
         )}
 
         {/* Student Form for Creating */}
         {isCreating && (
-          <StudentForm
-            formData={formData}
-            onChange={handleInputChange}
-            onSubmit={handleCreate}
-            onCancel={() => setIsCreating(false)}
-            isEditing={false}
-          />
+          <div className="mt-4">
+            <StudentForm
+              formData={formData}
+              onChange={handleInputChange}
+              onSubmit={handleCreate}
+              onCancel={() => setIsCreating(false)}
+              isEditing={false}
+            />
+          </div>
         )}
 
-        <br />
-
         {/* Student Table */}
-        <StudentTable
-          students={paginatedStudents}
-          selectedStudents={selectedStudents}
-          onSelectStudent={handleSelectStudent}
-          isEditing={isEditing}
-          onEdit={handleEditStudent}
-          onDelete={handleDelete}
-          formData={formData}
-          setFormData={setFormData}
-          handleUpdate={handleUpdate}
-          setIsEditing={setIsEditing}
-          handleInputChange={handleInputChange}
-        />
+        <div className="mt-4">
+          <StudentTable
+            students={paginatedStudents}
+            selectedStudents={selectedStudents}
+            onSelectStudent={handleSelectStudent}
+            isEditing={isEditing}
+            onEdit={handleEditStudent}
+            onDelete={handleDelete}
+            formData={formData}
+            setFormData={setFormData}
+            handleUpdate={handleUpdate}
+            setIsEditing={setIsEditing}
+            handleInputChange={handleInputChange}
+          />
+        </div>
 
         {/* No Students Found Message */}
         {filteredStudents.length === 0 && (
-          <p className="text-center py-4 text-gray-500">No students found.</p>
+          <p className="text-center py-4 text-zinc-400">No students found.</p>
         )}
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPrevious={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            onNext={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-          />
+          <div className="mt-4">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPrevious={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onNext={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+            />
+          </div>
         )}
       </CardContent>
     </Card>

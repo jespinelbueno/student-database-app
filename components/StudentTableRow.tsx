@@ -33,9 +33,13 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
   setIsEditing,
   handleInputChange,
 }) => (
-  <TableRow>
+  <TableRow className="text-zinc-100">
     <TableCell>
-      <Checkbox checked={isSelected} onCheckedChange={onSelect} />
+      <Checkbox 
+        checked={isSelected} 
+        onCheckedChange={onSelect}
+        className="border-zinc-400 text-zinc-100 data-[state=checked]:text-zinc-100 data-[state=checked]:bg-zinc-700"
+      />
     </TableCell>
     <TableCell>
       {isEditing ? (
@@ -44,10 +48,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="firstName"
           value={formData.firstName}
           onChange={handleInputChange}
-          className="w-full"
+          className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
-        `${student.firstName} ${student.lastName}`
+        <span className="text-zinc-100">{`${student.firstName} ${student.lastName}`}</span>
       )}
     </TableCell>
     <TableCell>
@@ -57,10 +61,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="graduationYear"
           value={formData.graduationYear}
           onChange={handleInputChange}
-          className="w-full"
+          className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
-        student.graduationYear
+        <span className="text-zinc-100">{student.graduationYear}</span>
       )}
     </TableCell>
     <TableCell>
@@ -70,10 +74,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="email"
           value={formData.email}
           onChange={handleInputChange}
-          className="w-full"
+          className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
-        student.email
+        <span className="text-zinc-100">{student.email}</span>
       )}
     </TableCell>
     <TableCell>
@@ -83,10 +87,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="phoneNumber"
           value={formData.phoneNumber ?? ''}
           onChange={handleInputChange}
-          className="w-full"
+          className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
-        student.phoneNumber ?? ''
+        <span className="text-zinc-100">{student.phoneNumber ?? ''}</span>
       )}
     </TableCell>
     <TableCell>
@@ -96,10 +100,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="state"
           value={formData.state ?? ''}
           onChange={handleInputChange}
-          className="w-full"
+          className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
-        student.state ?? ''
+        <span className="text-zinc-100">{student.state ?? ''}</span>
       )}
     </TableCell>
     <TableCell>
@@ -109,10 +113,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="schoolOrg"
           value={formData.schoolOrg}
           onChange={handleInputChange}
-          className="w-full"
+          className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
-        student.schoolOrg
+        <span className="text-zinc-100">{student.schoolOrg}</span>
       )}
     </TableCell>
     <TableCell>
@@ -129,9 +133,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
               },
             } as unknown as ChangeEvent<HTMLInputElement>)
           }
+          className="border-zinc-400 text-zinc-100 data-[state=checked]:text-zinc-100 data-[state=checked]:bg-zinc-700"
         />
       ) : (
-        student.promisingStudent ? 'Yes' : 'No'
+        <span className="text-zinc-100">{student.promisingStudent ? 'Yes' : 'No'}</span>
       )}
     </TableCell>
     <TableCell className="text-right">
@@ -149,7 +154,7 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           <Button onClick={onEdit} className="w-20" size="sm">
             Edit
           </Button>
-          <Button onClick={onDelete} className='w-20'
+          <Button onClick={onDelete} className='w-20 text-black'
           variant="outline" size="sm">
             Delete
           </Button>

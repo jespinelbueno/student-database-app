@@ -192,49 +192,53 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
-    <Card>
+    <Card className="bg-zinc-800 border-zinc-700">
       <CardHeader>
-        <CardTitle>Upload Students</CardTitle>
+        <CardTitle className="text-zinc-100">Upload Students</CardTitle>
       </CardHeader>
       <CardContent>
         <div
           {...getRootProps()}
-          className="border-2 border-dashed p-8 text-center cursor-pointer"
+          className="border-2 border-dashed border-zinc-700 bg-zinc-900/50 hover:bg-zinc-900/80 transition-colors p-8 text-center cursor-pointer rounded-lg"
         >
           <input {...getInputProps()} />
-          <p>Drag and drop a file, or click to select one</p>
+          <p className="text-zinc-400">Drag and drop a file, or click to select one</p>
         </div>
         {previewData.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-lg font-bold">Preview of Uploaded Data:</h3>
-            <ul className="list-disc list-inside">
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-zinc-100 mb-4">Preview of Uploaded Data:</h3>
+            <ul className="list-disc list-inside space-y-2 text-zinc-300">
               {previewData.map((student, index) => (
-                <li key={index}>
+                <li key={index} className="text-sm">
                   {student.firstName} {student.lastName} - {student.email} -{" "}
                   {student.graduationYear} - {student.phoneNumber} -{" "}
                   {student.schoolOrg} - {student.state}
                 </li>
               ))}
             </ul>
-            <div className="Buttons flex flex-wrap gap-3">
-              {" "}
+            <div className="flex flex-wrap gap-3 mt-6">
               <Button
-                className="mt-4"
                 onClick={handleApproveAndUpload}
                 disabled={isLoading}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 {isLoading ? "Uploading..." : "Approve and Upload"}
               </Button>
-              <Button className="mt-4" onClick={handleCancel}>
+              <Button 
+                onClick={handleCancel}
+                className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100"
+              >
                 Cancel
               </Button>
             </div>
           </div>
         )}
 
-        {errorMessage && <p className="mt-4 text-red-500">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="mt-4 text-red-400 bg-red-900/20 p-3 rounded-lg">{errorMessage}</p>
+        )}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="text-zinc-400 text-sm">
         You can upload a maximum of 30 students at a time.
       </CardFooter>
     </Card>

@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Student } from '@/lib/students'
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 
 interface StudentGraduationYearChartProps {
   students: Student[]
@@ -25,31 +25,39 @@ export function StudentGraduationYearChart({ students }: StudentGraduationYearCh
   console.log("Processed chartData in StudentGraduationYearChart:", chartData);
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-zinc-800 border-zinc-700">
       <CardHeader>
-        <CardTitle>Students by Graduation Year</CardTitle>
-        <CardDescription>Distribution of students across different graduation years</CardDescription>
+        <CardTitle className="text-zinc-100">Students by Graduation Year</CardTitle>
+        <CardDescription className="text-zinc-400">Distribution of students across different graduation years</CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={chartData}>
             <XAxis
               dataKey="year"
-              stroke="#888888"
+              stroke="#e4e4e7"
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="#888888"
+              stroke="#e4e4e7"
               fontSize={12}
               tickLine={false}
               axisLine={false}
               tickFormatter={(value) => `${value}`}
             />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#27272a',
+                border: '1px solid #3f3f46',
+                borderRadius: '6px',
+                color: '#e4e4e7'
+              }}
+            />
             <Bar
               dataKey="count"
-              fill="rgb(16 185 129)"
+              fill="#10b981"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
