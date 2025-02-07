@@ -107,30 +107,30 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-zinc-800 border-zinc-700">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Advanced Query</CardTitle>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <CardTitle className="text-zinc-100">Advanced Query</CardTitle>
+        <Button variant="ghost" size="icon" onClick={onClose} className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
         {conditions.map((condition, index) => (
-          <div key={index} className="flex flex-wrap items-end gap-2 pb-4 border-b">
+          <div key={index} className="flex flex-wrap items-end gap-2 pb-4 border-b border-zinc-700">
             {/* Field Selection */}
             <div className="flex-1 min-w-[200px]">
-              <Label htmlFor={`field-${index}`}>Field</Label>
+              <Label htmlFor={`field-${index}`} className="text-zinc-300">Field</Label>
               <Select
                 value={condition.field}
                 onValueChange={(value) => handleFieldChange(index, value)}
               >
-                <SelectTrigger id={`field-${index}`}>
+                <SelectTrigger id={`field-${index}`} className="bg-zinc-900 border-zinc-700 text-zinc-100">
                   <SelectValue placeholder="Select field" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-zinc-800 border-zinc-700">
                   {fields.map((field) => (
-                    <SelectItem key={field.value} value={field.value}>
+                    <SelectItem key={field.value} value={field.value} className="text-zinc-100 focus:bg-zinc-700 focus:text-zinc-100">
                       {field.label}
                     </SelectItem>
                   ))}
@@ -139,19 +139,19 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
             </div>
             {/* Operator Selection */}
             <div className="flex-1 min-w-[200px]">
-              <Label htmlFor={`operator-${index}`}>Operator</Label>
+              <Label htmlFor={`operator-${index}`} className="text-zinc-300">Operator</Label>
               <Select
                 value={condition.operator}
                 onValueChange={(value) => handleOperatorChange(index, value as Operator)}
                 disabled={!condition.field}
               >
-                <SelectTrigger id={`operator-${index}`}>
+                <SelectTrigger id={`operator-${index}`} className="bg-zinc-900 border-zinc-700 text-zinc-100">
                   <SelectValue placeholder="Select operator" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-zinc-800 border-zinc-700">
                   {condition.field &&
                     getOperatorOptions(condition.field).map((op) => (
-                      <SelectItem key={op} value={op}>
+                      <SelectItem key={op} value={op} className="text-zinc-100 focus:bg-zinc-700 focus:text-zinc-100">
                         {op.charAt(0).toUpperCase() + op.slice(1)}
                       </SelectItem>
                     ))}
@@ -160,7 +160,7 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
             </div>
             {/* Value Input */}
             <div className="flex-1 min-w-[200px]">
-              <Label htmlFor={`value-${index}`}>Value</Label>
+              <Label htmlFor={`value-${index}`} className="text-zinc-300">Value</Label>
               {condition.field === 'promisingStudent' ? (
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -168,8 +168,9 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
                     checked={condition.value === true || condition.value === 'true'}
                     onCheckedChange={(checked) => handleValueChange(index, checked)}
                     disabled={!condition.operator}
+                    className="data-[state=checked]:bg-emerald-600"
                   />
-                  <span>{condition.value === true || condition.value === 'true' ? 'Yes' : 'No'}</span>
+                  <span className="text-zinc-300">{condition.value === true || condition.value === 'true' ? 'Yes' : 'No'}</span>
                 </div>
               ) : condition.field === 'createdAt' || condition.field === 'updatedAt' ? (
                 <Input
@@ -178,6 +179,7 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
                   value={condition.value as string}
                   onChange={(e) => handleValueChange(index, e.target.value)}
                   disabled={!condition.operator}
+                  className="bg-zinc-900 border-zinc-700 text-zinc-100 focus:ring-zinc-700"
                 />
               ) : (
                 <Input
@@ -186,19 +188,21 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
                   value={condition.value as string}
                   onChange={(e) => handleValueChange(index, e.target.value)}
                   disabled={!condition.operator}
+                  className="bg-zinc-900 border-zinc-700 text-zinc-100 focus:ring-zinc-700"
                 />
               )}
             </div>
             {/* ValueTo Input for 'between' Operator */}
             {condition.operator === 'between' && (
               <div className="flex-1 min-w-[200px]">
-                <Label htmlFor={`valueTo-${index}`}>To</Label>
+                <Label htmlFor={`valueTo-${index}`} className="text-zinc-300">To</Label>
                 {condition.field === 'createdAt' || condition.field === 'updatedAt' ? (
                   <Input
                     id={`valueTo-${index}`}
                     type="date"
                     value={condition.valueTo as string}
                     onChange={(e) => handleValueChange(index, e.target.value, true)}
+                    className="bg-zinc-900 border-zinc-700 text-zinc-100 focus:ring-zinc-700"
                   />
                 ) : (
                   <Input
@@ -206,6 +210,7 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
                     type={condition.field === 'graduationYear' ? 'number' : 'text'}
                     value={condition.valueTo as string}
                     onChange={(e) => handleValueChange(index, e.target.value, true)}
+                    className="bg-zinc-900 border-zinc-700 text-zinc-100 focus:ring-zinc-700"
                   />
                 )}
               </div>
@@ -215,7 +220,7 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
               variant="ghost"
               size="icon"
               onClick={() => removeCondition(index)}
-              className="mb-2"
+              className="mb-2 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700"
             >
               <X className="h-4 w-4" />
               <span className="sr-only">Remove condition</span>
@@ -224,10 +229,10 @@ export default function QueryWizard({ onApplyQuery, onClose }: QueryWizardProps)
         ))}
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={addCondition}>
+        <Button variant="outline" onClick={addCondition} className="border-zinc-700 text-zinc-100 hover:bg-zinc-700">
           <Plus className="mr-2 h-4 w-4" /> Add Condition
         </Button>
-        <Button onClick={handleApplyQuery}>
+        <Button onClick={handleApplyQuery} className="bg-emerald-600 hover:bg-emerald-700">
           <Search className="mr-2 h-4 w-4" /> Apply Query
         </Button>
       </CardFooter>
