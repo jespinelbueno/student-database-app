@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { SessionProvider } from '../components/SessionProvider'
+// import { SessionProvider } from '../components/SessionProvider'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../lib/auth'
 import { MainNav } from '../components/MainNav'
-
+import { SessionProvider } from 'next-auth/react'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -23,10 +23,10 @@ export default async function RootLayout({
   return (
     <html className='bg-zinc-900' lang="en">
       <body className={`${inter.className} text-zinc-100`}>
-        <SessionProvider session={session}>
+        <SessionProvider session={session}> 
           <MainNav session={session} />
           {children}
-        </SessionProvider>
+        </SessionProvider> 
       </body>
     </html>
   )

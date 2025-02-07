@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
-import { NLQueryResult } from "@/lib/students"
+import { NLQueryResult, Student } from "@/lib/students"
 import { prisma } from "@/lib/db"
+import { processNaturalLanguageQuery } from "@/lib/ai-utils"
+import { Prisma } from "@prisma/client"
 
 export async function POST(request: Request) {
   try {
@@ -13,51 +15,40 @@ export async function POST(request: Request) {
       )
     }
 
-    // Here you would integrate with your AI service to parse the natural language query
-    // For now, we'll return mock data
-    const mockResult: NLQueryResult = {
-      queryInterpretation: "Finding promising students in California graduating in 2025",
-      filters: [
-        {
-          field: "state",
-          operation: "equals",
-          value: "California",
-          confidence: 0.95,
-        },
-        {
-          field: "graduationYear",
-          operation: "equals",
-          value: 2025,
-          confidence: 0.9,
-        },
-        {
-          field: "promisingStudent",
-          operation: "equals",
-          value: true,
-          confidence: 0.85,
-        },
-      ],
-      confidence: 0.9,
-      students: [],
+    // Process the query using our AI utilities
+    const { queryInterpretation, filters, confidence } = processNaturalLanguageQuery(query)
+
+    // Build the Prisma query based on the filters
+    const where: Prisma.StudentWhereInput = {
+      AND: filters.map(filter => {
+        const field = filter.field as keyof Student
+        switch (filter.operation) {
+          case 'equals':
+            return { [field]: filter.value }
+          case 'contains':
+            return { [field]: { contains: filter.value, mode: 'insensitive' } }
+          case 'greaterThan':
+            return { [field]: { gt: filter.value } }
+          case 'lessThan':
+            return { [field]: { lt: filter.value } }
+          default:
+            return {}
+        }
+      })
     }
 
-    // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Query the database
+    const students = await prisma.student.findMany({ where })
 
-    // Actually query the database using the parsed filters
-    const students = await prisma.student.findMany({
-      where: {
-        AND: [
-          { state: "California" },
-          { graduationYear: 2025 },
-          { promisingStudent: true },
-        ],
-      },
-    })
+    // Return the results
+    const result: NLQueryResult = {
+      queryInterpretation,
+      filters,
+      confidence,
+      students,
+    }
 
-    mockResult.students = students
-
-    return NextResponse.json(mockResult)
+    return NextResponse.json(result)
   } catch (error) {
     console.error("Error processing natural language query:", error)
     return NextResponse.json(

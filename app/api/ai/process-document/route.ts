@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { DocumentAnalysis, StudentData } from "@/lib/students"
+import { processDocument } from "@/lib/ai-utils"
 
 function validateExtractedData(data: StudentData) {
   const missingFields = []
@@ -45,32 +46,20 @@ export async function POST(request: Request) {
       )
     }
 
-    // Mock data with variations based on file type
-    const mockData = {
-      firstName: file.name.includes("transcript") ? "John" : "Jane",
-      lastName: file.name.includes("transcript") ? "Doe" : "Smith",
-      email: file.name.includes("transcript") ? "john.doe@example" : "jane.smith@school.edu",
-      graduationYear: file.name.includes("transcript") ? 2024 : 2026,
-      phoneNumber: "123-456-789",  // Intentionally incorrect format
-      promisingStudent: file.name.includes("honors"),
-      schoolOrg: file.name.includes("transcript") ? "Sample High School" : "",
-      state: file.name.includes("transcript") ? "California" : "CA",
-    }
-
+    // Process the document using our AI utilities
+    const extractedData = await processDocument(file)
+    
     // Validate the extracted data
-    const { missingFields, suggestedActions, confidence } = validateExtractedData(mockData)
+    const { missingFields, suggestedActions, confidence } = validateExtractedData(extractedData)
 
-    const mockAnalysis: DocumentAnalysis = {
-      extractedData: mockData,
+    const analysis: DocumentAnalysis = {
+      extractedData,
       confidence,
       missingFields,
       suggestedActions,
     }
 
-    // Simulate processing time based on file size
-    await new Promise(resolve => setTimeout(resolve, Math.min(file.size / 1000, 3000)))
-
-    return NextResponse.json(mockAnalysis)
+    return NextResponse.json(analysis)
   } catch (error) {
     console.error("Error processing document:", error)
     return NextResponse.json(

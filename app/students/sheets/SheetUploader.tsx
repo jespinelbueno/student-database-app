@@ -161,12 +161,19 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             const processedData = processExcelData(jsonData as ExcelRow[]);
 
-            if (processedData.length > 30) {
-              setErrorMessage("You can upload a maximum of 30 students at a time.");
+            if (processedData.length > 5) {
+              setErrorMessage("You can only upload 5 students at a time.");
               setPreviewData([]);
             } else {
               setErrorMessage(null);
-              setPreviewData(prev => [...prev, ...processedData]);
+              setPreviewData(prev => {
+                const newData = [...prev, ...processedData];
+                if (newData.length > 5) {
+                  setErrorMessage("Total number of students in this upload cannot exceed 5.");
+                  return prev;
+                }
+                return newData;
+              });
             }
           } catch (error) {
             console.error("Error reading file:", error);
@@ -182,19 +189,31 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
   const handleApproveAndUpload = async () => {
     setIsLoading(true);
     try {
-      // Fetch existing emails from the database
+      // First, check total number of students in database
+      const totalStudentsResponse = await fetch("/api/students/count");
+      if (!totalStudentsResponse.ok) {
+        throw new Error("Failed to check database capacity");
+      }
+      const { count } = await totalStudentsResponse.json();
+      
+      if (count + previewData.length > 40) {
+        setErrorMessage(
+          `Cannot add ${previewData.length} students. The database can only hold 40 students total (current: ${count}).`
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Then check for duplicate emails
       const existingEmailsResponse = await fetch("/api/emails");
       if (!existingEmailsResponse.ok) {
         throw new Error("Failed to fetch existing student emails");
       }
       
       const existingEmails: string[] = await existingEmailsResponse.json();
-
-      // Normalize email case for comparison
       const normalizedExistingEmails = existingEmails.map(email => email.toLowerCase());
       const uploadedEmails = previewData.map(student => student.email.toLowerCase());
 
-      // Find duplicates
       const duplicates = uploadedEmails.filter(email => 
         normalizedExistingEmails.includes(email)
       );
@@ -207,7 +226,7 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
         return;
       }
 
-      // Proceed with upload if no duplicates
+      // Proceed with upload if no duplicates and within limits
       const response = await fetch("/api/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -339,7 +358,7 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
         )}
       </CardContent>
       <CardFooter className="text-zinc-400 text-sm">
-        You can upload a maximum of 30 students at a time.
+        The database can hold a maximum of 40 students. You can upload up to 5 students at a time.
       </CardFooter>
     </Card>
   );
