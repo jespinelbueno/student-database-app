@@ -24,7 +24,7 @@ export default async function RootLayout({
   return (
     <html className='bg-zinc-900' lang="en">
       <body className={`${inter.className} text-zinc-100`}>
-        <Providers>
+        <Providers session={session}>
           <MainNav session={session} />
           {children}
         </Providers>
