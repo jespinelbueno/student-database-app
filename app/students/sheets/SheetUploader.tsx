@@ -252,7 +252,7 @@ export function SheetUploader({ onRefresh }: SheetUploaderProps) {
   return (
     <Card className="bg-zinc-800 border-zinc-700">
       <CardHeader>
-        <CardTitle className="text-zinc-100">Upload Students</CardTitle>
+        <CardTitle className="text-zinc-100">Upload Students using Ai</CardTitle>
       </CardHeader>
       <CardContent>
         <div

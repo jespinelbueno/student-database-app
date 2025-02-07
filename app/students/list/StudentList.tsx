@@ -5,8 +5,7 @@ import React, { useState, ChangeEvent, FormEvent } from "react";
 import {
   Student,
   CreateStudentInput,
-  UpdateStudentInput,
-  StudentData,
+  UpdateStudentInput
 } from "@/lib/students";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -17,7 +16,6 @@ import { StudentForm } from "@/components/StudentForm";
 import { StudentTable } from "@/components/StudentTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import QueryWizard from "@/components/queryWizard/QueryWizard";
-import { AIDocumentProcessor } from '@/components/AIDocumentProcessor'
 import { NaturalLanguageSearch } from '@/components/NaturalLanguageSearch'
 
 // Import the custom hook
@@ -269,21 +267,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
               setCurrentPage(1); // Reset to first page
             }} 
           />
-          <AIDocumentProcessor 
-            onProcessComplete={(data: StudentData) => {
-              // Convert StudentData to CreateStudentInput
-              setFormData({
-                ...data,
-                promisingStudent: data.promisingStudent || false, // Provide default value
-                graduationYear: data.graduationYear,
-                schoolOrg: data.schoolOrg || "", // Provide default value
-                email: data.email,
-                firstName: data.firstName,
-                lastName: data.lastName,
-              });
-              setIsCreating(true);
-            }} 
-          />
+
         </div>
 
         {/* Search Bar */}

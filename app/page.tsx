@@ -38,7 +38,7 @@ export default function HomePage() {
         <TabsList className="bg-zinc-800 p-1">
           <TabsTrigger value="list" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Student List</TabsTrigger>
           <TabsTrigger value="charts" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Charts</TabsTrigger>
-          <TabsTrigger value="import" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Import from Sheets</TabsTrigger>
+          <TabsTrigger value="import" className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Import using Ai</TabsTrigger>
         </TabsList>
         <TabsContent value="list">
           {isLoading ? (
