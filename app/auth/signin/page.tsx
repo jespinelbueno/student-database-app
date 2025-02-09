@@ -24,8 +24,8 @@ export default function SignIn() {
 
   return (
     <div className="relative min-h-screen w-full">
-      <BackgroundPaths title="FutureScholarsAI" />
-      <div className="absolute inset-0 flex items-center justify-center z-50">
+      <BackgroundPaths title="FutureScholarsAI" showTitle={true} />
+      <div className="absolute inset-0 flex items-center justify-center z-50 mt-32">
         <Card className="w-[400px] bg-zinc-800/90 border-zinc-700 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-2xl text-zinc-100">Welcome back</CardTitle>

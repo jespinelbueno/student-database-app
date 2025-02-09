@@ -34,7 +34,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container bg-zinc-900 mx-auto py-10">
+    <div className="container mx-auto py-10">
       <h1 className="text-4xl font-bold mb-8 text-zinc-100 tracking-tight">Future Scholars Dashboard</h1>
       <Tabs defaultValue="list" className="w-full">
         <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-zinc-800 rounded-lg gap-1">

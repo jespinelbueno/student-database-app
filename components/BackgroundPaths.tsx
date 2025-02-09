@@ -12,12 +12,12 @@ function FloatingPaths({ position }: { position: number }) {
     } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
       684 - i * 5 * position
     } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-    color: `rgba(15,23,42,${0.1 + i * 0.03})`,
+    color: `rgba(15,23,42,${0.1 + i * 0.02})`,
     width: 0.5 + i * 0.03,
   }))
 
   return (
-    <div className="absolute inset-0 pointer-events-none">
+    <div className="absolute inset-0 pointer-events-none opacity-70">
       <svg className="w-full h-full text-white dark:text-white" viewBox="0 0 696 316" fill="none">
         <title>Background Paths</title>
         {paths.map((path) => (
@@ -26,11 +26,11 @@ function FloatingPaths({ position }: { position: number }) {
             d={path.d}
             stroke="currentColor"
             strokeWidth={path.width}
-            strokeOpacity={0.1 + path.id * 0.03}
-            initial={{ pathLength: 0.3, opacity: 0.6 }}
+            strokeOpacity={0.2 + path.id * 0.02}
+            initial={{ pathLength: 0.4, opacity: 0.4 }}
             animate={{
               pathLength: 1,
-              opacity: [0.3, 0.6, 0.3],
+              opacity: [0.2, 0.4, 0.2],
               pathOffset: [0, 1, 0],
             }}
             transition={{
@@ -46,51 +46,55 @@ function FloatingPaths({ position }: { position: number }) {
 }
 
 export default function BackgroundPaths({
-  title = "Background Paths",
+  title = "",
+  showTitle = false,
 }: {
   title?: string
+  showTitle?: boolean
 }) {
   const words = title.split(" ")
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-zinc-900">
+    <div className="relative min-h-screen w-full overflow-hidden bg-zinc-900">
       <div className="absolute inset-0">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2 }}
-          className="max-w-4xl mx-auto -translate-y-52"
-        >
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 tracking-tighter">
-            {words.map((word, wordIndex) => (
-              <span key={wordIndex} className="inline-block mr-4 last:mr-0">
-                {word.split("").map((letter, letterIndex) => (
-                  <motion.span
-                    key={`${wordIndex}-${letterIndex}`}
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{
-                      delay: wordIndex * 0.1 + letterIndex * 0.03,
-                      type: "spring",
-                      stiffness: 150,
-                      damping: 25,
-                    }}
-                    className="inline-block text-transparent bg-clip-text 
-                                        bg-gradient-to-r from-zinc-100 to-zinc-400/80"
-                  >
-                    {letter}
-                  </motion.span>
-                ))}
-              </span>
-            ))}
-          </h1>
-        </motion.div>
-      </div>
+      {showTitle && (
+        <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 2 }}
+            className="max-w-4xl mx-auto pt-20"
+          >
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 tracking-tighter">
+              {words.map((word, wordIndex) => (
+                <span key={wordIndex} className="inline-block mr-4 last:mr-0">
+                  {word.split("").map((letter, letterIndex) => (
+                    <motion.span
+                      key={`${wordIndex}-${letterIndex}`}
+                      initial={{ y: 100, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{
+                        delay: wordIndex * 0.1 + letterIndex * 0.03,
+                        type: "spring",
+                        stiffness: 150,
+                        damping: 25,
+                      }}
+                      className="inline-block text-transparent bg-clip-text 
+                                        bg-gradient-to-r from-emerald-400 to-emerald-600"
+                    >
+                      {letter}
+                    </motion.span>
+                  ))}
+                </span>
+              ))}
+            </h1>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 } 

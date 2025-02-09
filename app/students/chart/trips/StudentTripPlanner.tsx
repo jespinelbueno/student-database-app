@@ -18,7 +18,6 @@ export function StudentTripPlanner({ students }: { students: Student[] }) {
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null)
   const [route, setRoute] = useState<TripRoute | null>(null)
   const [maxStops, setMaxStops] = useState(5)
-  const [minStudents, setMinStudents] = useState(5)
   const [optimizationMethod, setOptimizationMethod] = useState("distance")
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
@@ -65,9 +64,8 @@ export function StudentTripPlanner({ students }: { students: Student[] }) {
       return acc
     }, {} as Record<string, StateGroup>)
 
-    // Convert to array and filter by minimum students
+    // Convert to array and map state groups to locations
     const validStates = Object.values(stateGroups)
-      .filter(group => group.studentCount >= minStudents)
       .map(group => ({
         state: group.state,
         studentCount: group.studentCount,
@@ -75,6 +73,7 @@ export function StudentTripPlanner({ students }: { students: Student[] }) {
         city: Array.from(group.cities).join(", "),
         schoolOrg: Array.from(group.schools).join(", ")
       }))
+      .sort((a, b) => b.studentCount - a.studentCount) // Sort by student count in descending order
 
     if (validStates.length === 0) {
       return
@@ -203,16 +202,6 @@ export function StudentTripPlanner({ students }: { students: Student[] }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Controls */}
             <div className="space-y-4">
-              <div>
-                <Label className="text-zinc-400">Minimum Students per Stop</Label>
-                <Input
-                  type="number"
-                  value={minStudents}
-                  onChange={(e) => setMinStudents(Number(e.target.value))}
-                  min={1}
-                  className="bg-zinc-900 border-zinc-700 text-zinc-100"
-                />
-              </div>
               <div>
                 <Label className="text-zinc-400">Maximum Stops</Label>
                 <Input
