@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 // import { SessionProvider } from '../components/SessionProvider'
 import { getServerSession } from 'next-auth'
@@ -7,7 +7,11 @@ import { authOptions } from '../lib/auth'
 import { MainNav } from '../components/MainNav'
 import { Providers } from './providers'
 
-const inter = Inter({ subsets: ['latin'] })
+const poppins = Poppins({ 
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Student Management App',
@@ -23,7 +27,7 @@ export default async function RootLayout({
 
   return (
     <html className='bg-zinc-900' lang="en">
-      <body className={`${inter.className} text-zinc-100`}>
+      <body className={`${poppins.className} text-zinc-100`}>
         <Providers session={session}>
           <MainNav session={session} />
           {children}

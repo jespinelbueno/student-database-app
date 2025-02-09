@@ -1,7 +1,7 @@
 // StudentList.tsx
 "use client";
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, { useState, FormEvent, useMemo, useCallback, memo } from "react";
 import {
   Student,
   CreateStudentInput,
@@ -13,16 +13,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { SearchBar } from "@/components/SearchBar";
 import { ActionButtons } from "@/components/ActionButtons";
 import { StudentForm } from "@/components/StudentForm";
-import { StudentTable } from "@/components/StudentTable";
 import { PaginationControls } from "@/components/PaginationControls";
 import QueryWizard from "@/components/queryWizard/QueryWizard";
 import { NaturalLanguageSearch } from '@/components/NaturalLanguageSearch'
-
-// Import the custom hook
+import { BulkEmailSender } from '@/components/BulkEmailSender'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useStudents } from "@/hooks/useStudents";
-
-// Remove unused import if not needed
-// import { QueryCondition } from '@/types/interfaces'
+import { Mail, List } from 'lucide-react'
+import { StudentTableRow } from "@/components/StudentTableRow";
 
 const STUDENTS_PER_PAGE = 5;
 
@@ -30,8 +28,10 @@ interface StudentListProps {
   initialStudents: Student[];
 }
 
+// Memoize the StudentTableRow component
+const MemoizedStudentTableRow = memo(StudentTableRow)
+
 export default function StudentList({ initialStudents }: StudentListProps) {
-  // Use the custom hook
   const {
     filteredStudents,
     searchTerm,
@@ -40,15 +40,40 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     createStudent,
     updateStudent,
     deleteStudent,
-    applyQuery,
     handleSearch,
-  } = useStudents(initialStudents);
+    applyQuery,
+  } = useStudents(initialStudents)
+
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([])
+  const [isSelectAll, setIsSelectAll] = useState(false)
+
+  // Memoize handlers
+  const handleSelectAll = useCallback(() => {
+    setIsSelectAll(!isSelectAll)
+    setSelectedStudents(
+      !isSelectAll ? filteredStudents.map((student) => student.id) : []
+    )
+  }, [isSelectAll, filteredStudents])
+
+  const handleSelectStudent = useCallback((studentId: number) => {
+    setSelectedStudents((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId]
+    )
+  }, [])
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleSearch(e.target.value)
+    },
+    [handleSearch]
+  )
 
   // Local UI state
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
   const [showQueryWizard, setShowQueryWizard] = useState(false);
   const [formData, setFormData] = useState<CreateStudentInput>({
     firstName: "",
@@ -64,30 +89,26 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     zipCode: "",
   });
 
-  const totalPages = Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE);
-  const paginatedStudents = filteredStudents.slice(
-    (currentPage - 1) * STUDENTS_PER_PAGE,
-    currentPage * STUDENTS_PER_PAGE
+  // Memoize expensive computations
+  const totalPages = useMemo(() => 
+    Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE),
+    [filteredStudents.length]
   );
 
-  // Handle search input change
-  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
-    handleSearch(e.target.value);
-  };
+  const paginatedStudents = useMemo(() => 
+    filteredStudents.slice(
+      (currentPage - 1) * STUDENTS_PER_PAGE,
+      currentPage * STUDENTS_PER_PAGE
+    ),
+    [filteredStudents, currentPage]
+  );
 
-  // Handle form input change
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : name === "graduationYear"
-          ? parseInt(value, 10)
-          : value,
-    }));
-  };
+  const selectedStudentObjects = useMemo(() => 
+    filteredStudents.filter(student => 
+      selectedStudents.includes(student.id)
+    ),
+    [filteredStudents, selectedStudents]
+  );
 
   // Handle creating a new student
   const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
@@ -117,12 +138,48 @@ export default function StudentList({ initialStudents }: StudentListProps) {
   // Handle updating a student
   const handleUpdate = async (id: number, data: UpdateStudentInput) => {
     try {
+      // Validate required fields
+      if (!data.firstName?.trim() || !data.lastName?.trim()) {
+        alert("First name and last name are required");
+        return;
+      }
+      if (!data.email?.includes("@")) {
+        alert("Please enter a valid email address");
+        return;
+      }
+      if (!data.graduationYear || data.graduationYear < new Date().getFullYear()) {
+        alert("Please enter a valid graduation year");
+        return;
+      }
+      if (!data.schoolOrg?.trim()) {
+        alert("School/Organization is required");
+        return;
+      }
+
+      // Format phone number if provided
+      if (data.phoneNumber) {
+        const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
+        if (!phoneRegex.test(data.phoneNumber)) {
+          alert("Phone number should be in format: XXX-XXX-XXXX");
+          return;
+        }
+      }
+
+      // Format state if provided
+      if (data.state) {
+        data.state = data.state.toUpperCase();
+        if (data.state.length !== 2) {
+          alert("State should be a two-letter code (e.g., CA)");
+          return;
+        }
+      }
+
       await updateStudent(id, data);
       setIsEditing(null);
-      alert("Student updated successfully");
+      alert("Student updated successfully!");
     } catch (error) {
       console.error("Error updating student:", error);
-      alert("Failed to update student. Please try again.");
+      alert("Failed to update student. Please check your input and try again.");
     }
   };
 
@@ -139,37 +196,6 @@ export default function StudentList({ initialStudents }: StudentListProps) {
       console.error("Error deleting student:", error);
       alert("Failed to delete student. Please try again.");
     }
-  };
-
-  // Handle selecting a student
-  const handleSelectStudent = (id: number) => {
-    setSelectedStudents((prev) =>
-      prev.includes(id)
-        ? prev.filter((studentId) => studentId !== id)
-        : [...prev, id]
-    );
-  };
-
-  // Handle selecting all students on the current page
-  const handleSelectAll = () => {
-    const currentPageIds = paginatedStudents.map((student) => student.id);
-    setSelectedStudents((prev) => {
-      const newSelection = [...prev];
-      currentPageIds.forEach((id) => {
-        if (!newSelection.includes(id)) {
-          newSelection.push(id);
-        }
-      });
-      return newSelection;
-    });
-  };
-
-  // Handle deselecting all students on the current page
-  const handleDeselectAll = () => {
-    const currentPageIds = paginatedStudents.map((student) => student.id);
-    setSelectedStudents((prev) =>
-      prev.filter((id) => !currentPageIds.includes(id))
-    );
   };
 
   // Handle downloading selected students
@@ -192,7 +218,10 @@ export default function StudentList({ initialStudents }: StudentListProps) {
       a.download = "selected_students.xlsx";
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 100);
     } catch (error: unknown) {
       console.error("Error downloading students:", error);
       if (error instanceof Error) {
@@ -220,8 +249,6 @@ export default function StudentList({ initialStudents }: StudentListProps) {
       zipCode: student.zipCode ?? "",
     });
   };
-
-  // Return JSX
 
   // Handle loading state
   if (isLoading) {
@@ -252,104 +279,193 @@ export default function StudentList({ initialStudents }: StudentListProps) {
         <h1 className="text-zinc-400"> Total number of students: <strong className="text-zinc-100">{initialStudents.length}</strong></h1>
       </CardHeader>
       <CardContent className="flex-col flex gap-4">
-        {/* AI Components and Search */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <NaturalLanguageSearch 
-            onSearchResults={(results) => {
-              handleSearch(""); // Clear the current search
-              applyQuery(results.filters.map(filter => ({
-                field: filter.field,
-                operator: filter.operation,
-                value: filter.value
-              })));
-              setCurrentPage(1); // Reset to first page
-            }} 
-          />
-          <Card className="w-full bg-zinc-800 border-zinc-700">
-            <CardHeader>
-              <CardTitle className="text-zinc-100">Quick Search</CardTitle>
-              <CardDescription className="text-zinc-400">
-                Search by name, email, or any other field
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SearchBar
-                searchTerm={searchTerm}
-                onSearchChange={handleSearchChange}
-              />
-            </CardContent>
-          </Card>
-        </div>
+        <Tabs defaultValue="list" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-auto p-1 bg-zinc-800 rounded-lg gap-1">
+            <TabsTrigger 
+              value="list" 
+              className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
+            >
+              <List className="h-4 w-4" />
+              <span>List View</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="email" 
+              className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
+            >
+              <Mail className="h-4 w-4" />
+              <span>Email</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Action Buttons */}
-        <ActionButtons
-          selectedStudentsCount={selectedStudents.length}
-          onAdd={() => setIsCreating(true)}
-          onSelectAll={handleSelectAll}
-          onDeselectAll={handleDeselectAll}
-          onDownloadSelected={handleDownloadSelected}
-          showQueryWizard={showQueryWizard}
-          toggleQueryWizard={() => setShowQueryWizard(!showQueryWizard)}
-        />
+          <div className="mt-6">
+            <TabsContent value="list">
+              {/* AI Components and Search */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <NaturalLanguageSearch 
+                  onSearchResults={(results) => {
+                    handleSearch(""); // Clear the current search
+                    applyQuery(results.filters.map(filter => ({
+                      field: filter.field,
+                      operator: filter.operation,
+                      value: filter.value
+                    })));
+                    setCurrentPage(1); // Reset to first page
+                  }} 
+                />
+                <Card className="w-full bg-zinc-800 border-zinc-700">
+                  <CardHeader>
+                    <CardTitle className="text-zinc-100">Quick Search</CardTitle>
+                    <CardDescription className="text-zinc-400">
+                      Search by name, email, or any other field
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <SearchBar
+                      searchTerm={searchTerm}
+                      onSearchChange={handleSearchChange}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
 
-        {/* Query Wizard */}
-        {showQueryWizard && (
-          <div className="mt-4">
-            <QueryWizard
-              onApplyQuery={applyQuery}
-              onClose={() => setShowQueryWizard(false)}
-            />
+              {/* Action Buttons */}
+              <div className="mt-6">
+                <ActionButtons
+                  selectedStudentsCount={selectedStudents.length}
+                  onAdd={() => setIsCreating(true)}
+                  onSelectAll={handleSelectAll}
+                  onDeselectAll={() => setSelectedStudents([])}
+                  onDownloadSelected={handleDownloadSelected}
+                  showQueryWizard={showQueryWizard}
+                  toggleQueryWizard={() => setShowQueryWizard(!showQueryWizard)}
+                />
+              </div>
+
+              {/* Query Wizard */}
+              {showQueryWizard && (
+                <div className="mt-4">
+                  <QueryWizard
+                    onApplyQuery={applyQuery}
+                    onClose={() => setShowQueryWizard(false)}
+                  />
+                </div>
+              )}
+
+              {/* Student Form for Creating */}
+              {isCreating && (
+                <div className="mt-4">
+                  <StudentForm
+                    formData={formData}
+                    onChange={(e) => {
+                      const { name, value, type, checked } = e.target;
+                      setFormData((prev) => ({
+                        ...prev,
+                        [name]:
+                          type === "checkbox"
+                            ? checked
+                            : name === "graduationYear"
+                            ? parseInt(value, 10)
+                            : value,
+                      }));
+                    }}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleCreate(e);
+                    }}
+                    onCancel={() => setIsCreating(false)}
+                    isEditing={false}
+                  />
+                </div>
+              )}
+
+              {/* Student Table */}
+              <div className="mt-4">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-zinc-700">
+                    <thead>
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Select</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Graduation Year</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Phone</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">State</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">School/Org</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Promising</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-700">
+                      {paginatedStudents.map((student) => (
+                        <MemoizedStudentTableRow
+                          key={student.id}
+                          student={student}
+                          isSelected={selectedStudents.includes(student.id)}
+                          onSelect={() => handleSelectStudent(student.id)}
+                          isEditing={isEditing === student.id}
+                          onEdit={() => handleEditStudent(student)}
+                          onDelete={() => handleDelete(student.id)}
+                          formData={formData}
+                          setFormData={setFormData}
+                          handleUpdate={handleUpdate}
+                          setIsEditing={setIsEditing}
+                          handleInputChange={(e) => {
+                            const { name, value, type, checked } = e.target;
+                            setFormData((prev) => ({
+                              ...prev,
+                              [name]:
+                                type === "checkbox"
+                                  ? checked
+                                  : name === "graduationYear"
+                                  ? parseInt(value, 10)
+                                  : value,
+                            }));
+                          }}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* No Students Found Message */}
+              {filteredStudents.length === 0 && (
+                <p className="text-center py-4 text-zinc-400">No students found.</p>
+              )}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-4">
+                  <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPrevious={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onNext={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                  />
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="email">
+              {selectedStudents.length > 0 ? (
+                <BulkEmailSender
+                  selectedStudents={selectedStudentObjects}
+                  onClose={() => setSelectedStudents([])}
+                />
+              ) : (
+                <Card className="w-full bg-zinc-800 border-zinc-700">
+                  <CardContent className="py-8">
+                    <p className="text-center text-zinc-400">
+                      Please select students from the list view to send emails.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
           </div>
-        )}
-
-        {/* Student Form for Creating */}
-        {isCreating && (
-          <div className="mt-4">
-            <StudentForm
-              formData={formData}
-              onChange={handleInputChange}
-              onSubmit={handleCreate}
-              onCancel={() => setIsCreating(false)}
-              isEditing={false}
-            />
-          </div>
-        )}
-
-        {/* Student Table */}
-        <div className="mt-4">
-          <StudentTable
-            students={paginatedStudents}
-            selectedStudents={selectedStudents}
-            onSelectStudent={handleSelectStudent}
-            isEditing={isEditing}
-            onEdit={handleEditStudent}
-            onDelete={handleDelete}
-            formData={formData}
-            setFormData={setFormData}
-            handleUpdate={handleUpdate}
-            setIsEditing={setIsEditing}
-            handleInputChange={handleInputChange}
-          />
-        </div>
-
-        {/* No Students Found Message */}
-        {filteredStudents.length === 0 && (
-          <p className="text-center py-4 text-zinc-400">No students found.</p>
-        )}
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="mt-4">
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPrevious={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              onNext={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-            />
-          </div>
-        )}
+        </Tabs>
       </CardContent>
     </Card>
   );

@@ -2,6 +2,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { NextAuthOptions } from "next-auth"
 import GithubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
+import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "./db"
 
 type UserRole = "ADMIN" | "USER"
@@ -26,6 +27,8 @@ declare module "next-auth" {
   }
 }
 
+const isDevelopment = process.env.NODE_ENV === "development"
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   secret: process.env.NEXTAUTH_SECRET,
@@ -36,6 +39,31 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
   providers: [
+    ...isDevelopment
+      ? [
+          CredentialsProvider({
+            name: "Development",
+            credentials: {
+              email: { label: "Email", type: "email" },
+              password: { label: "Password", type: "password" },
+            },
+            async authorize(credentials) {
+              if (
+                credentials?.email === "dev@example.com" &&
+                credentials?.password === "development"
+              ) {
+                return {
+                  id: "dev-user",
+                  name: "Development User",
+                  email: "dev@example.com",
+                  role: "ADMIN",
+                }
+              }
+              return null
+            },
+          }),
+        ]
+      : [],
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
@@ -51,7 +79,7 @@ export const authOptions: NextAuthOptions = {
         return {
           ...token,
           id: user.id,
-          role: "USER",
+          role: user.role || "USER",
         }
       }
       return token

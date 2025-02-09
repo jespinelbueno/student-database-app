@@ -43,13 +43,24 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
     </TableCell>
     <TableCell>
       {isEditing ? (
-        <Input
-          type="text"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleInputChange}
-          className="w-full text-zinc-100 bg-zinc-800"
-        />
+        <div className="flex gap-2">
+          <Input
+            type="text"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleInputChange}
+            placeholder="First Name"
+            className="w-1/2 text-zinc-100 bg-zinc-800"
+          />
+          <Input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleInputChange}
+            placeholder="Last Name"
+            className="w-1/2 text-zinc-100 bg-zinc-800"
+          />
+        </div>
       ) : (
         <span className="text-zinc-100">{`${student.firstName} ${student.lastName}`}</span>
       )}
@@ -61,6 +72,7 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="graduationYear"
           value={formData.graduationYear}
           onChange={handleInputChange}
+          min={new Date().getFullYear()}
           className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
@@ -74,6 +86,7 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="email"
           value={formData.email}
           onChange={handleInputChange}
+          placeholder="email@example.com"
           className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
@@ -87,6 +100,8 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="phoneNumber"
           value={formData.phoneNumber ?? ''}
           onChange={handleInputChange}
+          placeholder="XXX-XXX-XXXX"
+          pattern="\d{3}-\d{3}-\d{4}"
           className="w-full text-zinc-100 bg-zinc-800"
         />
       ) : (
@@ -100,7 +115,9 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
           name="state"
           value={formData.state ?? ''}
           onChange={handleInputChange}
-          className="w-full text-zinc-100 bg-zinc-800"
+          placeholder="CA"
+          maxLength={2}
+          className="w-full text-zinc-100 bg-zinc-800 uppercase"
         />
       ) : (
         <span className="text-zinc-100">{student.state ?? ''}</span>
@@ -151,7 +168,7 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
         </>
       ) : (
         <div className="flex flex-col gap-3">
-          <Button onClick={onEdit} className="w-20 bg-zinc-500 hover:bg-zinc-700" size="sm">
+          <Button onClick={onEdit} className="w-20 bg-emerald-600 hover:bg-emerald-700 text-zinc-100" size="sm">
             Edit
           </Button>
           <Button onClick={onDelete} className='w-20 bg-zinc-500 hover:bg-zinc-700 text-zinc-100'

@@ -35,7 +35,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
       <Button
         onClick={onDownloadSelected}
         disabled={selectedStudentsCount === 0}
-        className="bg-zinc-500 hover:bg-zinc-700"
+        className="bg-emerald-600 hover:bg-emerald-700 text-zinc-100"
       >
         Download Selected ({selectedStudentsCount})
       </Button>

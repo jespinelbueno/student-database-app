@@ -1,5 +1,5 @@
 // src/hooks/useStudents.ts
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Student, CreateStudentInput, UpdateStudentInput } from '@/lib/students'
 import { QueryCondition } from '@/types/interfaces'
 import {
@@ -11,10 +11,71 @@ import {
 
 export const useStudents = (initialStudents: Student[]) => {
   const [students, setStudents] = useState<Student[]>(initialStudents)
-  const [filteredStudents, setFilteredStudents] = useState<Student[]>(initialStudents)
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [activeFilters, setActiveFilters] = useState<QueryCondition[]>([])
+
+  // Memoize filtered students
+  const filteredStudents = useMemo(() => {
+    let result = students;
+
+    // Apply search term filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      result = result.filter((student) =>
+        ['firstName', 'lastName', 'email', 'phoneNumber', 'graduationYear']
+          .some((key) => 
+            String(student[key as keyof Student])
+              .toLowerCase()
+              .includes(searchLower)
+          )
+      );
+    }
+
+    // Apply query conditions
+    if (activeFilters.length > 0) {
+      result = result.filter((student) => {
+        return activeFilters.every((condition) => {
+          const { field, operator, value, valueTo } = condition
+          const studentValue = student[field as keyof Student]
+
+          switch (operator) {
+            case 'equals':
+              return studentValue == value
+            case 'contains':
+              return String(studentValue).toLowerCase().includes(String(value).toLowerCase())
+            case 'greaterThan':
+              return Number(studentValue) > Number(value)
+            case 'lessThan':
+              return Number(studentValue) < Number(value)
+            case 'between':
+              return (
+                Number(studentValue) >= Number(value) &&
+                Number(studentValue) <= Number(valueTo)
+              )
+            case 'in':
+              return String(value)
+                .split(',')
+                .map((v) => v.trim())
+                .includes(String(studentValue))
+            default:
+              return true
+          }
+        })
+      })
+    }
+
+    return result;
+  }, [students, searchTerm, activeFilters]);
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  const applyQuery = (conditions: QueryCondition[]) => {
+    setActiveFilters(conditions);
+  };
 
   // Fetch students if initialStudents is empty
   useEffect(() => {
@@ -29,7 +90,6 @@ export const useStudents = (initialStudents: Student[]) => {
     try {
       const data = await fetchStudentsService()
       setStudents(data)
-      setFilteredStudents(data)
     } catch (error) {
       console.error('Error fetching students:', error)
       setError('Failed to fetch students. Please try again.')
@@ -42,7 +102,6 @@ export const useStudents = (initialStudents: Student[]) => {
     try {
       const newStudent = await createStudentService(data)
       setStudents((prev) => [...prev, newStudent])
-      setFilteredStudents((prev) => [...prev, newStudent])
       return newStudent
     } catch (error) {
       console.error('Error creating student:', error)
@@ -56,9 +115,6 @@ export const useStudents = (initialStudents: Student[]) => {
       setStudents((prev) =>
         prev.map((student) => (student.id === id ? updatedStudent : student))
       )
-      setFilteredStudents((prev) =>
-        prev.map((student) => (student.id === id ? updatedStudent : student))
-      )
       return updatedStudent
     } catch (error) {
       console.error('Error updating student:', error)
@@ -70,54 +126,10 @@ export const useStudents = (initialStudents: Student[]) => {
     try {
       await deleteStudentService(id)
       setStudents((prev) => prev.filter((student) => student.id !== id))
-      setFilteredStudents((prev) => prev.filter((student) => student.id !== id))
     } catch (error) {
       console.error('Error deleting student:', error)
       throw error
     }
-  }
-
-  const applyQuery = (conditions: QueryCondition[]) => {
-    const filtered = students.filter((student) => {
-      return conditions.every((condition) => {
-        const { field, operator, value, valueTo } = condition
-        const studentValue = student[field as keyof Student]
-
-        switch (operator) {
-          case 'equals':
-            return studentValue == value
-          case 'contains':
-            return String(studentValue).toLowerCase().includes(String(value).toLowerCase())
-          case 'greaterThan':
-            return Number(studentValue) > Number(value)
-          case 'lessThan':
-            return Number(studentValue) < Number(value)
-          case 'between':
-            return (
-              Number(studentValue) >= Number(value) &&
-              Number(studentValue) <= Number(valueTo)
-            )
-          case 'in':
-            return String(value)
-              .split(',')
-              .map((v) => v.trim())
-              .includes(String(studentValue))
-          default:
-            return true
-        }
-      })
-    })
-    setFilteredStudents(filtered)
-  }
-
-  const handleSearch = (searchTerm: string) => {
-    setSearchTerm(searchTerm)
-    const filtered = students.filter((student) =>
-      ['firstName', 'lastName', 'email', 'phoneNumber', 'graduationYear']
-        .map((key) => String(student[key as keyof Student]).toLowerCase())
-        .some((value) => value.includes(searchTerm.toLowerCase()))
-    )
-    setFilteredStudents(filtered)
   }
 
   return {
