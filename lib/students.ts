@@ -2,6 +2,27 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+// Helper function to sanitize input strings
+function sanitizeString(str: string | null): string | null {
+  if (!str) return str;
+  return str
+    .replace(/[<>]/g, '') // Remove < and > to prevent HTML injection
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+=/gi, '') // Remove event handlers
+    .trim();
+}
+
+// Helper function to sanitize student input
+function sanitizeStudentInput<T extends Record<string, string | number | boolean | null>>(data: T): T {
+  const sanitized = { ...data };
+  for (const [key, value] of Object.entries(sanitized)) {
+    if (typeof value === 'string') {
+      sanitized[key as keyof T] = sanitizeString(value) as T[keyof T];
+    }
+  }
+  return sanitized;
+}
+
 export type Student = {
   id: number
   firstName: string
@@ -24,19 +45,26 @@ export type UpdateStudentInput = Partial<CreateStudentInput>
 
 export async function createStudent(data: CreateStudentInput): Promise<Student> {
   try {
-    console.log('Creating student with data:', data);  // Log the data being passed to createStudent
+    // Sanitize input data
+    const sanitizedData = sanitizeStudentInput(data);
+
+    // Validate email format
+    if (!sanitizedData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      throw new Error('Invalid email format');
+    }
+
+    // Validate phone number format if provided
+    if (sanitizedData.phoneNumber && !sanitizedData.phoneNumber.match(/^\d{3}-\d{3}-\d{4}$/)) {
+      throw new Error('Invalid phone number format');
+    }
 
     const student = await prisma.student.create({
-      data: {
-        ...data,
-        state: data.state || null,  // Ensure this handles null values correctly
-      }
+      data: sanitizedData
     })
 
-    console.log('Created student:', student);  // Log the created student object
     return student
   } catch (error) {
-    console.error('Error creating student:', error)  // Log detailed error
+    console.error('Error creating student:', error)
     throw new Error('Failed to create student')
   }
 }
@@ -49,12 +77,24 @@ export async function createStudents(data: CreateStudentInput[]): Promise<Studen
   return Promise.all(data.map((item) => createStudent(item)));
 }
 
-
 export async function updateStudent(id: number, data: UpdateStudentInput): Promise<Student | null> {
   try {
+    // Sanitize input data
+    const sanitizedData = sanitizeStudentInput(data);
+
+    // Validate email format if provided
+    if (sanitizedData.email && !sanitizedData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      throw new Error('Invalid email format');
+    }
+
+    // Validate phone number format if provided
+    if (sanitizedData.phoneNumber && !sanitizedData.phoneNumber.match(/^\d{3}-\d{3}-\d{4}$/)) {
+      throw new Error('Invalid phone number format');
+    }
+
     const updatedStudent = await prisma.student.update({
       where: { id },
-      data,
+      data: sanitizedData,
     })
     return updatedStudent
   } catch (error) {
@@ -80,8 +120,6 @@ export async function deleteStudent(id: number): Promise<boolean> {
     return false
   }
 }
-
-
 
 export async function getAllStudentEmails(): Promise<string[]> {
   try {
