@@ -56,15 +56,15 @@ export function StudentUSMap({ students }: StudentUSMapProps) {
 
   return (
     <Card className="w-full bg-zinc-800 border-zinc-700">
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="text-zinc-100">Student Distribution Map</CardTitle>
         <CardDescription className="text-zinc-400">Geographic distribution of students across the United States</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="w-full aspect-[1.5]">
+      <CardContent className="p-0">
+        <div className="w-full aspect-[1.75]">
           <ComposableMap
             projection="geoAlbersUsa"
-            projectionConfig={{ scale: 800 }}
+            projectionConfig={{ scale: 1000 }}
           >
             <Geographies geography="/states-10m.json">
               {({ geographies }) =>

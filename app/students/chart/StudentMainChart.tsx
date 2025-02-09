@@ -25,7 +25,7 @@ export function StudentMainChart({ initialStudents }: StudentMainChartProps) {
       </Card>
 
       <Tabs defaultValue="graduationChart">
-        <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full h-auto p-1 bg-zinc-800 rounded-lg gap-1">
+        <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 w-full h-auto p-1 bg-zinc-800 rounded-lg gap-1">
           <TabsTrigger 
             value="graduationChart" 
             className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"

@@ -6,7 +6,8 @@ import StudentList from "./students/list/StudentList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SheetUploader } from "./students/sheets/SheetUploader";
 import { StudentMainChart } from "./students/chart/StudentMainChart";
-import { Users, BarChart2, Upload } from "lucide-react";
+import { StudentTripPlanner } from "./students/chart/trips/StudentTripPlanner";
+import { Users, BarChart2, Upload, Plane } from "lucide-react";
 
 export default function HomePage() {
   const [students, setStudents] = useState<Student[]>([]); // Explicitly type the state
@@ -36,7 +37,7 @@ export default function HomePage() {
     <div className="container bg-zinc-900 mx-auto py-10">
       <h1 className="text-4xl font-bold mb-8 text-zinc-100 tracking-tight">Future Scholars Dashboard</h1>
       <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-zinc-800 rounded-lg gap-1">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-zinc-800 rounded-lg gap-1">
           <TabsTrigger 
             value="list" 
             className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
@@ -52,6 +53,14 @@ export default function HomePage() {
             <BarChart2 className="h-4 w-4" />
             <span className="hidden sm:inline">Analytics</span>
             <span className="sm:hidden">Charts</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="trips" 
+            className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
+          >
+            <Plane className="h-4 w-4" />
+            <span className="hidden sm:inline">Trip Planner</span>
+            <span className="sm:hidden">Trips</span>
           </TabsTrigger>
           <TabsTrigger 
             value="import" 
@@ -72,6 +81,9 @@ export default function HomePage() {
           </TabsContent>
           <TabsContent value="charts">
             <StudentMainChart initialStudents={students} />
+          </TabsContent>
+          <TabsContent value="trips">
+            <StudentTripPlanner students={students} />
           </TabsContent>
           <TabsContent value="import">
             <SheetUploader onRefresh={fetchStudents} />
