@@ -4,7 +4,6 @@ Developed an AI-powered student management platform that combines natural langua
 
 Technologies used: Next.js 14, TypeScript, PostgreSQL, Prisma, TensorFlow.js, Natural.js, Tesseract.js, PDF.js, Tailwind CSS, and Shadcn/ui.
 
-A modern, full-stack web application for managing student records with advanced features including natural language search, SQL query capabilities, and bulk email operations.
 
 ## AI-Powered Features
 
