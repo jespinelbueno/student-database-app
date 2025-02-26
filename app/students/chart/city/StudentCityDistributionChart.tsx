@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Student } from '@/lib/students'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { getPrimaryColor } from '@/lib/colors'
 
 interface StudentStateDistributionChartProps {
   students: Student[]
@@ -44,7 +45,7 @@ export function StudentCityDistributionChart({ students }: StudentStateDistribut
                 color: '#e4e4e7'
               }}
             />
-            <Bar dataKey="count" fill="#10b981" />
+            <Bar dataKey="count" fill={getPrimaryColor(1)} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

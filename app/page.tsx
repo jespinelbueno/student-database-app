@@ -6,8 +6,8 @@ import StudentList from "./students/list/StudentList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SheetUploader } from "./students/sheets/SheetUploader";
 import { StudentMainChart } from "./students/chart/StudentMainChart";
-import { StudentTripPlanner } from "./students/chart/trips/StudentTripPlanner";
-import { Users, BarChart2, Upload, Plane } from "lucide-react";
+import { Users, BarChart2, Upload } from "lucide-react";
+import { NEUTRAL_COLORS } from "@/lib/colors";
 
 export default function HomePage() {
   const [students, setStudents] = useState<Student[]>([]); // Explicitly type the state
@@ -35,12 +35,16 @@ export default function HomePage() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-4xl font-bold mb-8 text-zinc-100 tracking-tight">Future Scholars Dashboard</h1>
+      <h1 className="text-4xl font-bold mb-8 text-zinc-100 tracking-tight" style={{ color: NEUTRAL_COLORS.text.primary }}>Future Scholars Dashboard</h1>
       <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-zinc-800 rounded-lg gap-1">
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-zinc-800 rounded-lg gap-1" style={{ backgroundColor: NEUTRAL_COLORS.card }}>
           <TabsTrigger 
             value="list" 
             className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
+            style={{ 
+              "--active-bg": NEUTRAL_COLORS.border,
+              "--active-text": NEUTRAL_COLORS.text.primary
+            } as React.CSSProperties}
           >
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Student List</span>
@@ -49,22 +53,22 @@ export default function HomePage() {
           <TabsTrigger 
             value="charts" 
             className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
+            style={{ 
+              "--active-bg": NEUTRAL_COLORS.border,
+              "--active-text": NEUTRAL_COLORS.text.primary
+            } as React.CSSProperties}
           >
             <BarChart2 className="h-4 w-4" />
             <span className="hidden sm:inline">Analytics</span>
             <span className="sm:hidden">Charts</span>
           </TabsTrigger>
           <TabsTrigger 
-            value="trips" 
-            className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
-          >
-            <Plane className="h-4 w-4" />
-            <span className="hidden sm:inline">Trip Planner</span>
-            <span className="sm:hidden">Trips</span>
-          </TabsTrigger>
-          <TabsTrigger 
             value="import" 
             className="data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100 py-3 flex gap-2 items-center justify-center"
+            style={{ 
+              "--active-bg": NEUTRAL_COLORS.border,
+              "--active-text": NEUTRAL_COLORS.text.primary
+            } as React.CSSProperties}
           >
             <Upload className="h-4 w-4" />
             <span className="hidden sm:inline">Import with AI</span>
@@ -74,16 +78,13 @@ export default function HomePage() {
         <div className="mt-6">
           <TabsContent value="list">
             {isLoading ? (
-              <p className="text-zinc-400">Loading students...</p>
+              <p className="text-zinc-400" style={{ color: NEUTRAL_COLORS.text.secondary }}>Loading students...</p>
             ) : (
               <StudentList initialStudents={students} />
             )}
           </TabsContent>
           <TabsContent value="charts">
             <StudentMainChart initialStudents={students} />
-          </TabsContent>
-          <TabsContent value="trips">
-            <StudentTripPlanner students={students} />
           </TabsContent>
           <TabsContent value="import">
             <SheetUploader onRefresh={fetchStudents} />

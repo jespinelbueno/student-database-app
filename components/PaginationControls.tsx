@@ -19,8 +19,8 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
     <Button
       onClick={onPrevious}
       disabled={currentPage === 1}
-      variant="outline"
-      className="mr-2 bg-zinc-500 hover:bg-zinc-700 text-zinc-100"
+      variant="secondary"
+      className="mr-2"
     >
       Previous
     </Button>
@@ -30,8 +30,8 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
     <Button
       onClick={onNext}
       disabled={currentPage === totalPages}
-      variant="outline"
-      className="ml-2 bg-zinc-500 hover:bg-zinc-700 text-zinc-100"
+      variant="secondary"
+      className="ml-2"
     >
       Next
     </Button>

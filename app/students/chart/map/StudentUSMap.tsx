@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Student } from '@/lib/students'
 import {
@@ -10,6 +10,7 @@ import {
   Marker,
 } from "react-simple-maps"
 import { scaleLinear } from "d3-scale"
+import { SECONDARY_COLORS, NEUTRAL_COLORS } from '@/lib/colors'
 
 interface StudentUSMapProps {
   students: Student[]
@@ -36,20 +37,36 @@ const stateCoordinates: { [key: string]: [number, number] } = {
   'WI': [-89.616508, 44.268543], 'WY': [-107.290284, 42.755966]
 }
 
+// Map colors
+const MAP_BASE_COLOR = NEUTRAL_COLORS.border // zinc-700
+const MAP_HOVER_COLOR = NEUTRAL_COLORS.card // zinc-800
+const MARKER_COLOR = SECONDARY_COLORS[0] // amber-500
+const MARKER_PROMISING_COLOR = SECONDARY_COLORS[2] // red-500
+
 export function StudentUSMap({ students }: StudentUSMapProps) {
-  // Count students by state
+  const [hoveredState, setHoveredState] = useState<string | null>(null);
+
+  // Count students by state and track promising students
   const studentsByState = useMemo(() => {
-    const counts: { [key: string]: number } = {}
+    const counts: { [key: string]: { total: number, promising: number } } = {}
+    
     students.forEach(student => {
       if (student.state) {
-        counts[student.state] = (counts[student.state] || 0) + 1
+        if (!counts[student.state]) {
+          counts[student.state] = { total: 0, promising: 0 }
+        }
+        counts[student.state].total++
+        if (student.promisingStudent) {
+          counts[student.state].promising++
+        }
       }
     })
+    
     return counts
   }, [students])
 
   // Create a scale for marker size based on student count
-  const maxStudents = Math.max(...Object.values(studentsByState))
+  const maxStudents = Math.max(...Object.values(studentsByState).map(data => data.total))
   const markerScale = scaleLinear()
     .domain([0, maxStudents])
     .range([5, 20])
@@ -72,41 +89,59 @@ export function StudentUSMap({ students }: StudentUSMapProps) {
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    fill="#334155"
-                    stroke="#1e293b"
+                    fill={geo.id === hoveredState ? MAP_HOVER_COLOR : MAP_BASE_COLOR}
+                    stroke={NEUTRAL_COLORS.background}
                     strokeWidth={0.5}
+                    onMouseEnter={() => setHoveredState(geo.id as string)}
+                    onMouseLeave={() => setHoveredState(null)}
                   />
                 ))
               }
             </Geographies>
-            {Object.entries(studentsByState).map(([state, count]) => {
+            {Object.entries(studentsByState).map(([state, data]) => {
               const coordinates = stateCoordinates[state]
               if (!coordinates) return null
+
+              // Determine if this state has a significant number of promising students
+              const hasPromisingStudents = data.promising > 0 && (data.promising / data.total) > 0.3
+              const markerColor = hasPromisingStudents ? MARKER_PROMISING_COLOR : MARKER_COLOR
 
               return (
                 <Marker key={state} coordinates={coordinates}>
                   <circle
-                    r={markerScale(count)}
-                    fill="#10b981"
-                    fillOpacity={0.6}
-                    stroke="#059669"
+                    r={markerScale(data.total)}
+                    fill={markerColor}
+                    fillOpacity={0.8}
+                    stroke="#fff"
                     strokeWidth={1}
+                    style={{ cursor: 'pointer' }}
                   />
                   <text
                     textAnchor="middle"
                     y={4}
                     style={{
-                      fill: "#fff",
+                      fill: NEUTRAL_COLORS.text.primary,
                       fontSize: 8,
                       fontWeight: "bold",
+                      textShadow: "0px 0px 2px rgba(0,0,0,0.5)",
                     }}
                   >
-                    {count}
+                    {data.total}
                   </text>
                 </Marker>
               )
             })}
           </ComposableMap>
+        </div>
+        <div className="flex justify-center gap-6 mt-4 mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: MARKER_COLOR }}></div>
+            <span className="text-xs text-zinc-300">Regular Students</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: MARKER_PROMISING_COLOR }}></div>
+            <span className="text-xs text-zinc-300">High % Promising Students</span>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -19,6 +19,10 @@ function sanitizeStudentInput<T extends Record<string, string | number | boolean
     if (typeof value === 'string') {
       sanitized[key as keyof T] = sanitizeString(value) as T[keyof T];
     }
+    // Make sure boolean values are preserved correctly
+    if (key === 'promisingStudent' && typeof value !== 'undefined') {
+      sanitized[key as keyof T] = Boolean(value) as T[keyof T];
+    }
   }
   return sanitized;
 }

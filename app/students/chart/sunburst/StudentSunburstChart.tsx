@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Student } from '@/lib/students'
 import { ResponsiveSunburst } from '@nivo/sunburst'
+import { PRIMARY_COLORS, STATUS_COLORS } from '@/lib/colors'
 
 interface StudentSunburstChartProps {
   students: Student[]
@@ -36,7 +37,7 @@ export function StudentSunburstChart({ students }: StudentSunburstChartProps) {
     }, {} as Record<string, Student[]>)
 
     // Create hierarchy
-    data.children = Object.entries(stateGroups).map(([state, stateStudents]) => {
+    data.children = Object.entries(stateGroups).map(([state, stateStudents], stateIndex) => {
       // Group by city
       const cityGroups = stateStudents.reduce((acc, student) => {
         const city = student.city || 'Unknown City'
@@ -50,7 +51,8 @@ export function StudentSunburstChart({ students }: StudentSunburstChartProps) {
       const stateNode: SunburstData = {
         id: `state-${state}`,
         name: state,
-        value: stateStudents.length // Set state value
+        value: stateStudents.length, // Set state value
+        color: PRIMARY_COLORS[stateIndex % PRIMARY_COLORS.length]
       }
 
       stateNode.children = Object.entries(cityGroups).map(([city, cityStudents]) => {
@@ -86,13 +88,13 @@ export function StudentSunburstChart({ students }: StudentSunburstChartProps) {
               id: `promising-${state}-${city}-${school}`,
               name: 'Promising Students',
               value: promisingCount,
-              color: '#10b981' // emerald-500
+              color: STATUS_COLORS.warning // amber color for promising students
             },
             {
               id: `regular-${state}-${city}-${school}`,
               name: 'Regular Students',
               value: regularCount,
-              color: '#6b7280' // gray-500
+              color: STATUS_COLORS.info // blue color for regular students
             }
           ].filter(item => item.value > 0) // Only include non-zero values
 
@@ -126,7 +128,7 @@ export function StudentSunburstChart({ students }: StudentSunburstChartProps) {
             cornerRadius={2}
             borderWidth={1}
             borderColor={{ theme: 'background' }}
-            colors={{ scheme: 'nivo' }}
+            colors={{ datum: 'data.color' }}
             childColor={{
               from: 'color',
               modifiers: [['brighter', 0.1]]

@@ -54,7 +54,8 @@ export default function SignIn() {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-zinc-100"
+                  variant="success"
+                  className="w-full"
                 >
                   <Terminal className="mr-2 h-4 w-4" />
                   Development Login
@@ -72,16 +73,16 @@ export default function SignIn() {
               </div>
             </div>
             <Button
-              variant="outline"
-              className="bg-zinc-500 hover:bg-zinc-700 text-zinc-100 border-zinc-600"
+              variant="secondary"
+              className="w-full"
               onClick={() => signIn("github", { callbackUrl: "/" })}
             >
               <Github className="mr-2 h-4 w-4" />
               Github
             </Button>
             <Button
-              variant="outline"
-              className="bg-zinc-500 hover:bg-zinc-700 text-zinc-100 border-zinc-600"
+              variant="secondary"
+              className="w-full"
               onClick={() => signIn("google", { callbackUrl: "/" })}
             >
               <Mail className="mr-2 h-4 w-4" />

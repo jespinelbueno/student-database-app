@@ -7,38 +7,53 @@ interface ActionButtonsProps {
   onSelectAll: () => void;
   onDeselectAll: () => void;
   onDownloadSelected: () => void;
-  showQueryWizard: boolean;
-  toggleQueryWizard: () => void;
 }
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({
+export function ActionButtons({
   selectedStudentsCount,
   onAdd,
   onSelectAll,
   onDeselectAll,
   onDownloadSelected,
-  showQueryWizard,
-  toggleQueryWizard,
-}) => (
-  <div className="flex justify-between items-center flex-wrap gap-3">
-    <Button onClick={toggleQueryWizard} className="bg-zinc-500 hover:bg-zinc-700 text-zinc-100">
-      {showQueryWizard ? 'Hide Query Wizard' : 'Show Query Wizard'}
-    </Button>
-    <div className="flex space-x-5">
-      <Button onClick={onAdd} className="bg-emerald-600 hover:bg-emerald-700">Add Student</Button>
-      <Button onClick={onSelectAll} variant="secondary" className="bg-zinc-500 hover:bg-zinc-700">
+}: ActionButtonsProps) {
+  return (
+    <div className="flex flex-wrap justify-center sm:justify-end gap-2 w-full sm:w-auto">
+      <Button
+        variant="success"
+        onClick={onAdd}
+        className="flex-1 sm:flex-none"
+      >
+        Add Student
+      </Button>
+      
+      <Button 
+        onClick={onSelectAll}
+        variant="secondary"
+        className="flex-1 sm:flex-none"
+      >
         Select All
       </Button>
-      <Button onClick={onDeselectAll} variant="secondary" className="bg-zinc-500 hover:bg-zinc-700">
+      
+      <Button 
+        onClick={onDeselectAll} 
+        variant="secondary"
+        className="flex-1 sm:flex-none"
+      >
         Deselect All
       </Button>
+      
       <Button
         onClick={onDownloadSelected}
-        disabled={selectedStudentsCount === 0}
-        className="bg-emerald-600 hover:bg-emerald-700 text-zinc-100"
+        variant="success"
+        className="flex-1 sm:flex-none"
+        title={selectedStudentsCount > 0 
+          ? `Download ${selectedStudentsCount} selected students` 
+          : 'Download all students matching current filters'}
       >
-        Download Selected ({selectedStudentsCount})
+        {selectedStudentsCount > 0 
+          ? `Download (${selectedStudentsCount})` 
+          : 'Download All'}
       </Button>
     </div>
-  </div>
-);
+  );
+}

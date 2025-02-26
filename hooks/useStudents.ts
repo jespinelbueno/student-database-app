@@ -11,13 +11,14 @@ import {
 
 export const useStudents = (initialStudents: Student[]) => {
   const [students, setStudents] = useState<Student[]>(initialStudents)
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>(initialStudents)
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeFilters, setActiveFilters] = useState<QueryCondition[]>([])
 
   // Memoize filtered students
-  const filteredStudents = useMemo(() => {
+  const filteredStudentsMemo = useMemo(() => {
     let result = students;
 
     // Apply search term filter
@@ -143,5 +144,6 @@ export const useStudents = (initialStudents: Student[]) => {
     deleteStudent,
     applyQuery,
     handleSearch,
+    setFilteredStudents,
   }
 }

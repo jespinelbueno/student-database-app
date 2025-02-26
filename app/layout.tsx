@@ -15,8 +15,8 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: 'Student Management App',
-  description: 'Manage your student records',
+  title: 'FutureScholars AI',
+  description: 'Manage your student records with AI',
 }
 
 export default async function RootLayout({

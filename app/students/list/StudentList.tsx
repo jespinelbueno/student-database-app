@@ -7,20 +7,21 @@ import {
   CreateStudentInput,
   UpdateStudentInput
 } from "@/lib/students";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Import modular components
-import { SearchBar } from "@/components/SearchBar";
 import { ActionButtons } from "@/components/ActionButtons";
 import { StudentForm } from "@/components/StudentForm";
 import { PaginationControls } from "@/components/PaginationControls";
-import QueryWizard from "@/components/queryWizard/QueryWizard";
-import { NaturalLanguageSearch } from '@/components/NaturalLanguageSearch'
-import { BulkEmailSender } from '@/components/BulkEmailSender'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { BulkEmailSender } from '@/components/BulkEmailSender';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStudents } from "@/hooks/useStudents";
-import { Mail, List } from 'lucide-react'
+import { Mail, List } from 'lucide-react';
 import { StudentTableRow } from "@/components/StudentTableRow";
+import { ColumnVisibility, DEFAULT_COLUMN_VISIBILITY } from "@/types/interfaces";
+import { Checkbox } from "@/components/ui/checkbox";
+import { UnifiedSearch } from "@/components/UnifiedSearch";
+import { NLQueryResult, QueryFilter } from "@/lib/students";
 
 const STUDENTS_PER_PAGE = 5;
 
@@ -42,10 +43,12 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     deleteStudent,
     handleSearch,
     applyQuery,
+    setFilteredStudents,
   } = useStudents(initialStudents)
 
   const [selectedStudents, setSelectedStudents] = useState<number[]>([])
   const [isSelectAll, setIsSelectAll] = useState(false)
+  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>(DEFAULT_COLUMN_VISIBILITY)
 
   // Memoize handlers
   const handleSelectAll = useCallback(() => {
@@ -70,11 +73,14 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     [handleSearch]
   )
 
+  const handleColumnVisibilityChange = useCallback((newVisibility: ColumnVisibility) => {
+    setColumnVisibility(newVisibility)
+  }, [])
+
   // Local UI state
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showQueryWizard, setShowQueryWizard] = useState(false);
   const [formData, setFormData] = useState<CreateStudentInput>({
     firstName: "",
     lastName: "",
@@ -109,6 +115,38 @@ export default function StudentList({ initialStudents }: StudentListProps) {
     ),
     [filteredStudents, selectedStudents]
   );
+
+  // Handler for AI search results
+  const handleAISearchResults = (results: NLQueryResult) => {
+    handleSearch(""); // Clear the current search
+    applyQuery(results.filters.map((filter: QueryFilter) => ({
+      field: filter.field,
+      operator: filter.operation,
+      value: filter.value
+    })));
+    setCurrentPage(1); // Reset to first page
+  }
+
+  // Handle SQL query results
+  const handleSQLQueryResults = (results: Student[]) => {
+    if (!Array.isArray(results)) {
+      console.error('Invalid results format:', results);
+      return;
+    }
+    
+    // Clear any existing search or filters
+    handleSearch("");
+    
+    // Update the filtered students list
+    setFilteredStudents(results);
+    
+    // Reset pagination
+    setCurrentPage(1);
+    
+    // Clear any selected students
+    setSelectedStudents([]);
+    setIsSelectAll(false);
+  };
 
   // Handle creating a new student
   const handleCreate = async (e: FormEvent<HTMLFormElement>) => {
@@ -174,7 +212,23 @@ export default function StudentList({ initialStudents }: StudentListProps) {
         }
       }
 
-      await updateStudent(id, data);
+      // Ensure promisingStudent is a boolean
+      data.promisingStudent = Boolean(data.promisingStudent);
+      
+      // Log data before sending to API
+      console.log('Updating student with data:', JSON.stringify(data));
+
+      const updatedStudent = await updateStudent(id, data);
+      
+      // Update the student in the filtered students list to reflect changes immediately
+      if (updatedStudent) {
+        setFilteredStudents(prevStudents => 
+          prevStudents.map(student => 
+            student.id === id ? {...student, ...data} : student
+          )
+        );
+      }
+      
       setIsEditing(null);
       alert("Student updated successfully!");
     } catch (error) {
@@ -201,10 +255,30 @@ export default function StudentList({ initialStudents }: StudentListProps) {
   // Handle downloading selected students
   const handleDownloadSelected = async () => {
     try {
+      // If no students are selected, use all filtered students
+      const studentsToDownload = selectedStudents.length > 0 
+        ? selectedStudents 
+        : filteredStudents.map(student => student.id);
+      
+      // Confirm download if downloading all filtered students
+      if (selectedStudents.length === 0 && filteredStudents.length > 0) {
+        const confirmDownload = confirm(`No students selected. Do you want to download all ${filteredStudents.length} filtered students?`);
+        if (!confirmDownload) return;
+      }
+      
+      // Don't proceed if there are no students to download
+      if (studentsToDownload.length === 0) {
+        alert("No students to download. Please select students or apply filters to show students.");
+        return;
+      }
+      
       const response = await fetch("/api/download-students", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentIds: selectedStudents }),
+        body: JSON.stringify({ 
+          studentIds: studentsToDownload,
+          visibleColumns: columnVisibility
+        }),
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -299,36 +373,17 @@ export default function StudentList({ initialStudents }: StudentListProps) {
 
           <div className="mt-6">
             <TabsContent value="list">
-              {/* AI Components and Search */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <NaturalLanguageSearch 
-                  onSearchResults={(results) => {
-                    handleSearch(""); // Clear the current search
-                    applyQuery(results.filters.map(filter => ({
-                      field: filter.field,
-                      operator: filter.operation,
-                      value: filter.value
-                    })));
-                    setCurrentPage(1); // Reset to first page
-                  }} 
-                />
-                <Card className="w-full bg-zinc-800 border-zinc-700">
-                  <CardHeader>
-                    <CardTitle className="text-zinc-100">Quick Search</CardTitle>
-                    <CardDescription className="text-zinc-400">
-                      Search by name, email, or any other field
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <SearchBar
-                      searchTerm={searchTerm}
-                      onSearchChange={handleSearchChange}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+              {/* Replace the old search components with UnifiedSearch */}
+              <UnifiedSearch
+                searchTerm={searchTerm}
+                onSearchChange={handleSearchChange}
+                onAISearchResults={handleAISearchResults}
+                onApplyQuery={applyQuery}
+                onUpdateColumnVisibility={handleColumnVisibilityChange}
+                onSQLQueryResults={handleSQLQueryResults}
+                initialColumnVisibility={columnVisibility}
+              />
 
-              {/* Action Buttons */}
               <div className="mt-6">
                 <ActionButtons
                   selectedStudentsCount={selectedStudents.length}
@@ -336,20 +391,8 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                   onSelectAll={handleSelectAll}
                   onDeselectAll={() => setSelectedStudents([])}
                   onDownloadSelected={handleDownloadSelected}
-                  showQueryWizard={showQueryWizard}
-                  toggleQueryWizard={() => setShowQueryWizard(!showQueryWizard)}
                 />
               </div>
-
-              {/* Query Wizard */}
-              {showQueryWizard && (
-                <div className="mt-4">
-                  <QueryWizard
-                    onApplyQuery={applyQuery}
-                    onClose={() => setShowQueryWizard(false)}
-                  />
-                </div>
-              )}
 
               {/* Student Form for Creating */}
               {isCreating && (
@@ -381,18 +424,42 @@ export default function StudentList({ initialStudents }: StudentListProps) {
               {/* Student Table */}
               <div className="mt-4">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-zinc-700">
-                    <thead>
+                  <table className="w-full table-fixed border-collapse">
+                    <thead className="bg-zinc-800 text-zinc-400 text-left text-sm">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Select</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Graduation Year</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Phone</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">State</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">School/Org</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Promising</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-zinc-400 uppercase tracking-wider">Actions</th>
+                        {columnVisibility.select && (
+                          <th className="px-2 py-3 w-[50px] align-middle">
+                            <Checkbox
+                              checked={isSelectAll}
+                              onCheckedChange={handleSelectAll}
+                              className="border-zinc-400 text-zinc-100 data-[state=checked]:text-zinc-100 data-[state=checked]:bg-zinc-700"
+                            />
+                          </th>
+                        )}
+                        {(columnVisibility.firstName || columnVisibility.lastName) && (
+                          <th className="px-2 py-3 w-[20%] align-middle">Name</th>
+                        )}
+                        {columnVisibility.graduationYear && (
+                          <th className="px-2 py-3 w-[80px] align-middle">Grad Year</th>
+                        )}
+                        {columnVisibility.email && (
+                          <th className="px-2 py-3 w-[20%] align-middle">Email</th>
+                        )}
+                        {columnVisibility.phoneNumber && (
+                          <th className="px-2 py-3 w-[120px] align-middle">Phone</th>
+                        )}
+                        {columnVisibility.state && (
+                          <th className="px-2 py-3 w-[60px] align-middle">State</th>
+                        )}
+                        {columnVisibility.schoolOrg && (
+                          <th className="px-2 py-3 w-[15%] align-middle">School</th>
+                        )}
+                        {columnVisibility.promisingStudent && (
+                          <th className="px-2 py-3 w-[80px] text-center align-middle">Promising</th>
+                        )}
+                        {columnVisibility.actions && (
+                          <th className="px-2 py-3 w-[100px] text-right align-middle">Actions</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-700">
@@ -409,6 +476,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                           setFormData={setFormData}
                           handleUpdate={handleUpdate}
                           setIsEditing={setIsEditing}
+                          columnVisibility={columnVisibility}
                           handleInputChange={(e) => {
                             const { name, value, type, checked } = e.target;
                             setFormData((prev) => ({

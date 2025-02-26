@@ -151,10 +151,9 @@ export function BulkEmailSender({ selectedStudents, onClose }: BulkEmailSenderPr
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-sm font-medium text-zinc-300">Email Signature</h3>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setShowSignatureEditor(!showSignatureEditor)}
-              className="bg-zinc-700 hover:bg-zinc-600"
             >
               <Code className="mr-2 h-4 w-4" />
               {showSignatureEditor ? 'Hide HTML Editor' : 'Edit HTML Signature'}
@@ -181,18 +180,16 @@ export function BulkEmailSender({ selectedStudents, onClose }: BulkEmailSenderPr
               <h3 className="text-sm font-medium text-zinc-300">Preview</h3>
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={prevPreview}
-                  className="bg-zinc-700 hover:bg-zinc-600"
                 >
                   Previous
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={nextPreview}
-                  className="bg-zinc-700 hover:bg-zinc-600"
                 >
                   Next
                 </Button>
@@ -235,24 +232,22 @@ export function BulkEmailSender({ selectedStudents, onClose }: BulkEmailSenderPr
 
         <div className="flex justify-end space-x-2">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => setShowPreview(!showPreview)}
-            className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100"
           >
             <Eye className="mr-2 h-4 w-4" />
             {showPreview ? 'Hide Preview' : 'Show Preview'}
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={onClose}
-            className="bg-zinc-700 hover:bg-zinc-600 text-zinc-100"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSend}
             disabled={isSending || !selectedStudents.length}
-            className="bg-emerald-600 hover:bg-emerald-700 text-zinc-100"
+            variant="success"
           >
             {isSending ? (
               <>

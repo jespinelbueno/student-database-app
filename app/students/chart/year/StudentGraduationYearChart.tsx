@@ -4,6 +4,7 @@ import React, { useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Student } from '@/lib/students'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { getPrimaryColor } from '@/lib/colors'
 
 interface StudentGraduationYearChartProps {
   students: Student[]
@@ -57,7 +58,7 @@ export function StudentGraduationYearChart({ students }: StudentGraduationYearCh
             />
             <Bar
               dataKey="count"
-              fill="#10b981"
+              fill={getPrimaryColor(2)}
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

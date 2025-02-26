@@ -3,6 +3,121 @@
 import React from 'react'
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
+// Create styles
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
+    padding: 30,
+  },
+  section: {
+    margin: 10,
+    padding: 10,
+    flexGrow: 1,
+  },
+  header: {
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#10b981',
+    fontWeight: 'bold',
+  },
+  subheader: {
+    fontSize: 18,
+    marginBottom: 10,
+    color: '#10b981',
+    fontWeight: 'bold',
+  },
+  text: {
+    fontSize: 12,
+    marginBottom: 5,
+  },
+  boldText: {
+    fontSize: 12,
+    marginBottom: 5,
+    fontWeight: 'bold',
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  column: {
+    flexDirection: 'column',
+    marginBottom: 10,
+    width: '50%',
+  },
+  barContainer: {
+    height: 15,
+    width: '100%',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 2,
+    marginBottom: 5,
+  },
+  bar: {
+    height: 15,
+    backgroundColor: '#10b981',
+    borderRadius: 2,
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    right: 30,
+    textAlign: 'center',
+    fontSize: 10,
+    color: '#6b7280',
+  },
+  kpiContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    flexWrap: 'wrap',
+  },
+  kpiItem: {
+    width: '48%',
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#f9fafb',
+    borderRadius: 5,
+  },
+  kpiValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#10b981',
+  },
+  kpiLabel: {
+    fontSize: 12,
+    color: '#4b5563',
+  },
+  trendSection: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  trendRow: {
+    flexDirection: 'row',
+    marginBottom: 5,
+    alignItems: 'center',
+  },
+  trendLabel: {
+    width: '20%',
+    fontSize: 10,
+  },
+  trendBarContainer: {
+    width: '60%',
+    height: 12,
+    backgroundColor: '#f3f4f6',
+  },
+  trendBar: {
+    height: 12,
+    backgroundColor: '#10b981',
+  },
+  trendValue: {
+    width: '20%',
+    fontSize: 10,
+    textAlign: 'right',
+  },
+})
+
 interface StudentReportProps {
   stateDistribution: { state: string; count: number }[]
   cityDistribution: { city: string; count: number }[]
@@ -10,100 +125,11 @@ interface StudentReportProps {
   totalStudents: number
   promisingStudentsCount: number
   userName: string
+  trendData: { date: string; count: number; promising: number }[]
+  uniqueStates: number
+  uniqueSchools: number
+  futureGrads: number
 }
-
-const styles = StyleSheet.create({
-  page: {
-    padding: 30,
-    backgroundColor: '#ffffff',
-  },
-  header: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#1a1a1a',
-    fontWeight: 'bold',
-  },
-  subHeader: {
-    fontSize: 20,
-    marginBottom: 20,
-    color: '#4a4a4a',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  section: {
-    margin: 10,
-    padding: 10,
-    flexGrow: 1,
-  },
-  summaryBox: {
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-    margin: '40px 0',
-    borderRadius: 5,
-  },
-  summaryText: {
-    fontSize: 16,
-    marginBottom: 10,
-    color: '#2a2a2a',
-    textAlign: 'center',
-  },
-  chartContainer: {
-    marginTop: 40,
-    padding: 20,
-    flexGrow: 1,
-  },
-  barContainer: {
-    height: 25,
-    flexDirection: 'row',
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  bar: {
-    height: '100%',
-    backgroundColor: '#4a90e2',
-    borderRadius: 4,
-  },
-  barLabel: {
-    fontSize: 12,
-    marginLeft: 10,
-    color: '#2a2a2a',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 30,
-    right: 30,
-    fontSize: 10,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  footerText: {
-    marginBottom: 5,
-  },
-  yearBar: {
-    height: 30,
-    flexDirection: 'row',
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  yearLabel: {
-    width: 60,
-    fontSize: 12,
-    marginRight: 10,
-    color: '#2a2a2a',
-  },
-  yearBarFill: {
-    height: '100%',
-    backgroundColor: '#4a90e2',
-    borderRadius: 4,
-  },
-  yearCount: {
-    fontSize: 12,
-    marginLeft: 10,
-    color: '#2a2a2a',
-  }
-})
 
 export function StudentReport({
   stateDistribution,
@@ -112,101 +138,166 @@ export function StudentReport({
   totalStudents,
   promisingStudentsCount,
   userName,
+  trendData,
+  uniqueStates,
+  uniqueSchools,
+  futureGrads,
 }: StudentReportProps) {
-  const promisingPercentage = ((promisingStudentsCount / totalStudents) * 100).toFixed(1)
   const currentDate = new Date().toLocaleDateString()
+  const promisingPercentage = Math.round((promisingStudentsCount / totalStudents) * 100) || 0
+  const futureGradsPercentage = Math.round((futureGrads / totalStudents) * 100) || 0
 
-  // Function to create a simple bar chart for state and city distributions
   const renderBarChart = (data: { label: string; count: number }[]) => {
-    const sortedData = [...data].sort((a, b) => b.count - a.count)
-    const maxCount = Math.max(...sortedData.map(item => item.count))
-
-    return sortedData.map((item, index) => (
-      <View key={index} style={styles.barContainer}>
-        <View style={[styles.bar, { width: `${(item.count / maxCount) * 70}%` }]} />
-        <Text style={styles.barLabel}>
-          {item.label}: {item.count} students
+    const maxCount = Math.max(...data.map(item => item.count))
+    return data.map((item, index) => (
+      <View key={index} style={styles.row}>
+        <Text style={[styles.text, { width: '30%' }]}>{item.label}</Text>
+        <View style={[styles.barContainer, { width: '50%' }]}>
+          <View
+            style={[
+              styles.bar,
+              { width: `${(item.count / maxCount) * 100}%` },
+            ]}
+          />
+        </View>
+        <Text style={[styles.text, { width: '20%', textAlign: 'right' }]}>
+          {item.count} ({Math.round((item.count / totalStudents) * 100)}%)
         </Text>
       </View>
     ))
   }
 
-  // Function to render graduation year distribution
   const renderGraduationYearChart = () => {
-    const sortedYears = [...graduationYearDistribution].sort((a, b) => a.year - b.year)
-    const maxCount = Math.max(...sortedYears.map(item => item.count))
-
-    return sortedYears.map((item, index) => (
-      <View key={index} style={styles.yearBar}>
-        <Text style={styles.yearLabel}>{item.year}</Text>
-        <View style={[styles.yearBarFill, { width: `${(item.count / maxCount) * 70}%` }]} />
-        <Text style={styles.yearCount}>{item.count} students</Text>
+    const maxCount = Math.max(
+      ...graduationYearDistribution.map(item => item.count)
+    )
+    return graduationYearDistribution.map((item, index) => (
+      <View key={index} style={styles.row}>
+        <Text style={[styles.text, { width: '30%' }]}>{item.year}</Text>
+        <View style={[styles.barContainer, { width: '50%' }]}>
+          <View
+            style={[
+              styles.bar,
+              { width: `${(item.count / maxCount) * 100}%` },
+            ]}
+          />
+        </View>
+        <Text style={[styles.text, { width: '20%', textAlign: 'right' }]}>
+          {item.count} ({Math.round((item.count / totalStudents) * 100)}%)
+        </Text>
       </View>
     ))
   }
 
+  const renderTrendChart = () => {
+    if (!trendData || trendData.length === 0) return null;
+    
+    const maxCount = Math.max(...trendData.map(item => item.count));
+    return trendData.map((item, index) => (
+      <View key={index} style={styles.trendRow}>
+        <Text style={styles.trendLabel}>{item.date}</Text>
+        <View style={styles.trendBarContainer}>
+          <View
+            style={[
+              styles.trendBar,
+              { width: `${(item.count / maxCount) * 100}%` },
+            ]}
+          />
+        </View>
+        <Text style={styles.trendValue}>
+          {item.count} ({item.promising} promising)
+        </Text>
+      </View>
+    ));
+  };
+
   return (
     <Document>
-      {/* Summary Page */}
       <Page size="A4" style={styles.page}>
         <Text style={styles.header}>Student Analytics Report</Text>
-        <View style={styles.summaryBox}>
-          <Text style={styles.summaryText}>Total Students: {totalStudents}</Text>
-          <Text style={styles.summaryText}>Promising Students: {promisingStudentsCount}</Text>
-          <Text style={styles.summaryText}>Promising Student Percentage: {promisingPercentage}%</Text>
-          <Text style={styles.summaryText}>Report Generated: {currentDate}</Text>
-          <Text style={styles.summaryText}>Generated By: {userName}</Text>
-        </View>
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by {userName}</Text>
-          <Text>Student Analytics Report • Page 1 of 4</Text>
-        </View>
-      </Page>
+        <Text style={styles.text}>
+          Generated for: {userName} | Date: {currentDate}
+        </Text>
 
-      {/* State Distribution Page */}
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.subHeader}>State Distribution</Text>
-        <View style={styles.chartContainer}>
+        {/* KPI Section */}
+        <View style={styles.kpiContainer}>
+          <View style={styles.kpiItem}>
+            <Text style={styles.kpiValue}>{totalStudents}</Text>
+            <Text style={styles.kpiLabel}>Total Students</Text>
+          </View>
+          <View style={styles.kpiItem}>
+            <Text style={styles.kpiValue}>{promisingStudentsCount} ({promisingPercentage}%)</Text>
+            <Text style={styles.kpiLabel}>Promising Students</Text>
+          </View>
+          <View style={styles.kpiItem}>
+            <Text style={styles.kpiValue}>{uniqueStates}</Text>
+            <Text style={styles.kpiLabel}>States Covered</Text>
+          </View>
+          <View style={styles.kpiItem}>
+            <Text style={styles.kpiValue}>{futureGrads} ({futureGradsPercentage}%)</Text>
+            <Text style={styles.kpiLabel}>Future Graduates</Text>
+          </View>
+        </View>
+
+        {/* Trend Analysis */}
+        <View style={styles.section}>
+          <Text style={styles.subheader}>Student Growth Trend</Text>
+          <Text style={styles.text}>Monthly student acquisition over time</Text>
+          <View style={styles.trendSection}>
+            {renderTrendChart()}
+          </View>
+        </View>
+
+        {/* State Distribution */}
+        <View style={styles.section}>
+          <Text style={styles.subheader}>State Distribution</Text>
+          <Text style={styles.text}>
+            Top {Math.min(stateDistribution.length, 10)} states by student count
+          </Text>
           {renderBarChart(
-            stateDistribution.map(item => ({ 
-              label: item.state, 
-              count: item.count 
-            }))
+            stateDistribution
+              .slice(0, 10)
+              .map(item => ({ label: item.state, count: item.count }))
           )}
         </View>
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by {userName}</Text>
-          <Text>Student Analytics Report • Page 2 of 4</Text>
-        </View>
-      </Page>
 
-      {/* City Distribution Page */}
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.subHeader}>City Distribution</Text>
-        <View style={styles.chartContainer}>
+        {/* City Distribution */}
+        <View style={styles.section}>
+          <Text style={styles.subheader}>City Distribution</Text>
+          <Text style={styles.text}>
+            Top {Math.min(cityDistribution.length, 10)} cities by student count
+          </Text>
           {renderBarChart(
-            cityDistribution.map(item => ({ 
-              label: item.city, 
-              count: item.count 
-            }))
+            cityDistribution
+              .slice(0, 10)
+              .map(item => ({ label: item.city, count: item.count }))
           )}
         </View>
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by {userName}</Text>
-          <Text>Student Analytics Report • Page 3 of 4</Text>
-        </View>
-      </Page>
 
-      {/* Graduation Year Distribution Page */}
-      <Page size="A4" style={styles.page}>
-        <Text style={styles.subHeader}>Graduation Year Distribution</Text>
-        <View style={styles.chartContainer}>
+        {/* Graduation Year Distribution */}
+        <View style={styles.section}>
+          <Text style={styles.subheader}>Graduation Year Distribution</Text>
           {renderGraduationYearChart()}
         </View>
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Generated by {userName}</Text>
-          <Text>Student Analytics Report • Page 4 of 4</Text>
+
+        {/* Summary */}
+        <View style={styles.section}>
+          <Text style={styles.subheader}>Summary</Text>
+          <Text style={styles.text}>
+            This report shows a total of {totalStudents} students, with{' '}
+            {promisingStudentsCount} ({promisingPercentage}%) identified as promising.
+          </Text>
+          <Text style={styles.text}>
+            Students are distributed across {uniqueStates} states and {uniqueSchools} schools/organizations.
+          </Text>
+          <Text style={styles.text}>
+            There are {futureGrads} students ({futureGradsPercentage}%) graduating in future years.
+          </Text>
         </View>
+
+        <Text style={styles.footer}>
+          Generated by Future Scholars AI on {currentDate}
+        </Text>
       </Page>
     </Document>
   )
