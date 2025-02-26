@@ -25,6 +25,7 @@ interface StudentTableProps {
   setIsEditing: React.Dispatch<React.SetStateAction<number | null>>
   handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void
   columnVisibility?: ColumnVisibility
+  userRole?: string
 }
 
 export const StudentTable: React.FC<StudentTableProps> = ({
@@ -40,6 +41,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
   setIsEditing,
   handleInputChange,
   columnVisibility = DEFAULT_COLUMN_VISIBILITY,
+  userRole,
 }) => (
   <div className="overflow-x-auto overflow-y-auto">
     <Table>
@@ -72,6 +74,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
             setIsEditing={setIsEditing}
             handleInputChange={handleInputChange}
             columnVisibility={columnVisibility}
+            userRole={userRole}
           />
         ))}
       </TableBody>

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { updateStudent, deleteStudent } from "@/lib/students";
 import { UpdateStudentInput } from "@/lib/students";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // ✅ Await params inside the function
 //changes 
@@ -37,6 +39,15 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> } // 👈 Use Promise<{ id: string }>
 ) {
   try {
+    // Check if user is authenticated and has admin role
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.role || session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized. Only administrators can delete students." },
+        { status: 401 }
+      );
+    }
+
     const { id } = await context.params; // 👈 Await params
 
     const studentId = Number(id);

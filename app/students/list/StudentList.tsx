@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, FormEvent, useMemo, useCallback, memo } from "react";
+import { useSession } from "next-auth/react";
 import {
   Student,
   CreateStudentInput,
@@ -33,6 +34,7 @@ interface StudentListProps {
 const MemoizedStudentTableRow = memo(StudentTableRow)
 
 export default function StudentList({ initialStudents }: StudentListProps) {
+  const { data: session } = useSession();
   const {
     filteredStudents,
     searchTerm,
@@ -489,6 +491,7 @@ export default function StudentList({ initialStudents }: StudentListProps) {
                                   : value,
                             }));
                           }}
+                          userRole={session?.user?.role}
                         />
                       ))}
                     </tbody>

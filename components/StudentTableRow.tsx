@@ -20,6 +20,7 @@ interface StudentTableRowProps {
   setIsEditing: React.Dispatch<React.SetStateAction<number | null>>
   handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void
   columnVisibility: ColumnVisibility
+  userRole?: string
 }
 
 export const StudentTableRow: React.FC<StudentTableRowProps> = ({
@@ -34,7 +35,10 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
   setIsEditing,
   handleInputChange,
   columnVisibility,
+  userRole,
 }) => {
+  const isAdmin = userRole === "ADMIN";
+
   return (
   <tr className="text-zinc-100 border-b border-zinc-700">
     {columnVisibility.select && (
@@ -223,14 +227,16 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
             >
               Edit
             </Button>
-            <Button 
-              onClick={onDelete} 
-              variant="destructive"
-              size="sm"
-              className="w-full bg-red-600 hover:bg-red-700 text-white"
-            >
-              Delete
-            </Button>
+            {isAdmin && (
+              <Button 
+                onClick={onDelete} 
+                variant="destructive"
+                size="sm"
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+              >
+                Delete
+              </Button>
+            )}
           </div>
         )}
       </td>
