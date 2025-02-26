@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Student } from '@/lib/students'
 import { CreateStudentInput } from '@/lib/students'
-import { ColumnVisibility, DEFAULT_COLUMN_VISIBILITY } from '@/types/interfaces'
+import { ColumnVisibility } from '@/types/interfaces'
 
 interface StudentTableRowProps {
   student: Student
@@ -33,7 +33,7 @@ export const StudentTableRow: React.FC<StudentTableRowProps> = ({
   handleUpdate,
   setIsEditing,
   handleInputChange,
-  columnVisibility = DEFAULT_COLUMN_VISIBILITY,
+  columnVisibility,
 }) => {
   return (
   <tr className="text-zinc-100 border-b border-zinc-700">

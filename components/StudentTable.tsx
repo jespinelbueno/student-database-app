@@ -10,6 +10,7 @@ import {
 import { Student } from '@/lib/students'
 import { StudentTableRow } from '@/components/StudentTableRow'
 import { CreateStudentInput } from '@/lib/students'
+import { ColumnVisibility, DEFAULT_COLUMN_VISIBILITY } from '@/types/interfaces'
 
 interface StudentTableProps {
   students: Student[]
@@ -23,6 +24,7 @@ interface StudentTableProps {
   handleUpdate: (id: number, data: CreateStudentInput) => void
   setIsEditing: React.Dispatch<React.SetStateAction<number | null>>
   handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void
+  columnVisibility?: ColumnVisibility
 }
 
 export const StudentTable: React.FC<StudentTableProps> = ({
@@ -37,6 +39,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
   handleUpdate,
   setIsEditing,
   handleInputChange,
+  columnVisibility = DEFAULT_COLUMN_VISIBILITY,
 }) => (
   <div className="overflow-x-auto overflow-y-auto">
     <Table>
@@ -68,6 +71,7 @@ export const StudentTable: React.FC<StudentTableProps> = ({
             handleUpdate={handleUpdate}
             setIsEditing={setIsEditing}
             handleInputChange={handleInputChange}
+            columnVisibility={columnVisibility}
           />
         ))}
       </TableBody>
